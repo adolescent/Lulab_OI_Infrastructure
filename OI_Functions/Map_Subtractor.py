@@ -73,7 +73,7 @@ class Sub_Map_Generator(object):
                 used_frame = np.arange(4,16),
                 map = 'ttest',
                 save_flag = True,savepath = r'Results',graph_name = 'Test',
-                filter_flag = True,fliter_sigma = 0.75
+                filter_flag = True,LP_sigma = 0.75,HP_sigma = 300
                 ):
         '''
         This function will get subtraction map and do clip, Then visualize submap,and save on given folder.
@@ -104,12 +104,16 @@ class Sub_Map_Generator(object):
         elif clip_method == 'fix':
             clipped_graph = np.clip(raw_drr,raw_drr.mean()-clip_value,raw_drr.mean()+clip_value)
 
-        # normalize and transfer graph into 256 tif.
-        normed_graph = clipped_graph/max(abs(clipped_graph.min()),clipped_graph.max())
-        graph = (normed_graph*65535).astype('u2')
+        # filter and normalize.
         if filter_flag:
-            graph = gaussian_filter(input = graph, sigma = fliter_sigma)
+            HP_graph = gaussian_filter(input = clipped_graph, sigma = HP_sigma)
+            LP_graph = gaussian_filter(input = clipped_graph, sigma = LP_sigma)
+            filted_graph = (LP_graph-HP_graph)
 
+        # normed_graph = filted_graph/max(abs(filted_graph.min()),filted_graph.max())
+        # graph = (normed_graph+1)*32767
+        normed_graph = (filted_graph-filted_graph.min())/(filted_graph.max()-filted_graph.min())
+        graph = normed_graph*65535
         plt.imshow(graph, cmap='gray', vmin=0, vmax=65535)
         if save_flag == True:
             cf.mkdir(savepath)
