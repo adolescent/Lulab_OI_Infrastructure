@@ -56,7 +56,7 @@ def Get_File_Name(path,file_type = '.bin',keyword = ''):
     return Name_Lists
 
 #%% F3 Get all subfolders.
-def Get_Subfolders(root_path,method = 'Whole'):
+def Get_Subfolders(root_path,keyword = '',method = 'Whole'):
     '''
     Input a path, return sub folders. Absolute path.
 
@@ -64,6 +64,8 @@ def Get_Subfolders(root_path,method = 'Whole'):
     ----------
     root_path : (str)
         The path you want to operate.
+    keyword : (str),optional
+        If keyword given, only folder have keyword will return.
     method : ('Whole' or 'Relative')
         Determine whether we return only relative file path or the whole path.
 
@@ -73,14 +75,16 @@ def Get_Subfolders(root_path,method = 'Whole'):
         List of all subfolders. Absolute path provided to simplify usage.
 
     '''
-    if method == 'Relative':
-        subfolder_names = [name for name in os.listdir(root_path) if os.path.isdir(os.path.join(root_path, name))]
-    elif method == 'Whole':
-        subfolder_paths = [os.path.join(root_path, name) for name in os.listdir(root_path) if os.path.isdir(os.path.join(root_path, name))]
-    else:
-        raise IOError('Method ILLEGAL.')
-
-    return subfolder_paths
+    all_path = []
+    for root, dirs, files in os.walk(root_path):
+        if root == root_path:
+            for dir_name in dirs:
+                if keyword in dir_name:
+                    if method == 'Whole':
+                        all_path.append(os.path.join(root, dir_name))
+                    elif method == 'Relative':
+                        all_path.append(dir_name)
+    return all_path
 
 
 #%% F4 Mkdir, a little adjustment.
