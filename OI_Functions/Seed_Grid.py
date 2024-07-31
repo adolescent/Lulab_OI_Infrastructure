@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 from tqdm import tqdm
-
+from Signal_Functions.Filters import Signal_Filter_1D
 
 
 class Seed_Correlation_Grid(object):
@@ -40,7 +40,7 @@ class Seed_Correlation_Grid(object):
         return self.raw_R_frame[key,:,:]
 
 
-    def Grid_dRR_Generator(self,method):
+    def Grid_dRR_Generator(self,method): # signal filter need to be considered.. not done yet.
         ver_num = self.height//self.grid_size
         hor_num = self.width//self.grid_size
         if method == 'before':
@@ -60,14 +60,19 @@ class Seed_Correlation_Grid(object):
                     c_grid = pix_drr_matrix[:,i*self.grid_size:(i+1)*self.grid_size,j*self.grid_size:(j+1)*self.grid_size].mean(1).mean(1)
                     self.grid_drr[:,i,j] = c_grid
 
-
         elif method =='after':
             print('Do dR/R After Averaging Grid.')
+            self.grid_drr = np.zeros(shape=(self.frame_num,ver_num,hor_num),dtype='f8')
+            for i in tqdm(range(ver_num)):
+                for j in range(hor_num):
+                    c_grid = self.raw_R_frame[:,i*self.grid_size:(i+1)*self.grid_size,j*self.grid_size:(j+1)*self.grid_size].mean(1).mean(1)
+                    self.grid_drr[:,i,j] = c_grid/c_grid.mean()-1
+
         else:
             raise ValueError('Invalid dR/R Method!')
         
 
-    def Grid_Cutter(self,clip=2,font_size=10,drr_method = 'after'):
+    def Grid_Cutter(self,clip=2,font_size=10,drr_method = 'after',save = True):
         '''
         This will cut graph into grids, get each grid's avr response curve, and plot grid graph, for seed selection.
         '''
@@ -109,16 +114,23 @@ class Seed_Correlation_Grid(object):
         plt.show()
         fig.savefig(cf.join(self.save_folder,'Grid_Info.png'))
 
-        ## below is for generating drr matrix.
+        ### below is for generating drr matrix.
+        print('Grid Cutting Finished. You can select seed now.')
+        print('Generating Grid dR/R Series.')
         # Average response of each grid
+        self.Grid_dRR_Generator(method=drr_method)
+        if save == True:
+            cf.Save_Variable(self.save_folder,'Grid_dRR_Matrix',self.grid_drr)
 
-        # 
+
     def Seed_Determine(self,seed_coords):# generate seed correlation of given graph.
         ## GIVE IN SEQ Y,X!!!
         pass
 
     def Correlate_Grids(self): # correlate graph directly.
         pass
+
+
     def Correlate_Grid_Slide_Window(self,win_len,win_step): # give win_len and win_step in s is okay.
         pass
 
