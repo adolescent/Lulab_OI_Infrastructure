@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import warnings
 from tqdm import tqdm
 from Signal_Functions.Filters import Signal_Filter_1D
+from scipy import stats
+import seaborn as sns
 
 
 class Seed_Correlation_Grid(object):
@@ -125,14 +127,57 @@ class Seed_Correlation_Grid(object):
 
     def Seed_Determine(self,seed_coords):# generate seed correlation of given graph.
         ## GIVE IN SEQ Y,X!!!
-        pass
+        seed_num = len(seed_coords)
+        print(f'Seed Number:{seed_num}')
+        corr_response = np.zeros(shape = (seed_num,self.frame_num),dtype='f8')
+        for i,c_seed in enumerate(seed_coords):
+            corr_response[i,:] = self.grid_drr[:,c_seed[0],c_seed[1]]
+        self.seed_response = corr_response.mean(0)
 
-    def Correlate_Grids(self): # correlate graph directly.
-        pass
+
+    def Correlate_Grids(self,corr = 'Pearson',HP = False,LP = False): # correlate graph directly.
+        ver_num = self.grid_drr.shape[1]
+        hor_num = self.grid_drr.shape[2]
+        self.Seed_Corr = np.zeros(shape = (ver_num,hor_num),dtype='f8')
+        self.Seed_Corr_p = np.zeros(shape = (ver_num,hor_num),dtype='f8')
+        # filt seed response if you need.
+        used_seed_response = Signal_Filter_1D(self.seed_response,HP_freq=HP,LP_freq=LP,fps = self.fps,keep_DC=False)
+        for i in range(ver_num):
+            for j in range(hor_num):
+                c_series = self.grid_drr[:,i,j]
+                c_series = Signal_Filter_1D(c_series,HP_freq=HP,LP_freq=LP,fps = self.fps,keep_DC=False)
+                if corr == 'Pearson':
+                    c_r,c_p = stats.pearsonr(used_seed_response,c_series)
+                elif corr == 'Spearman':
+                    c_r,c_p = stats.spearmanr(used_seed_response,c_series)
+                self.Seed_Corr[i,j] = c_r
+                self.Seed_Corr_p[i,j] = c_p
 
 
-    def Correlate_Grid_Slide_Window(self,win_len,win_step): # give win_len and win_step in s is okay.
-        pass
+    def Correlate_Grid_Slide_Window(self,win_len,win_step,corr = 'Pearson',LP = False,HP = False): # give win_len and win_step in s is okay.
+        ver_num = self.grid_drr.shape[1]
+        hor_num = self.grid_drr.shape[2]
+        winlen_frame = int(win_len*self.fps)
+        winstep_frame = int(win_step*self.fps)
+        winnum = int((self.frame_num-winlen_frame)//winstep_frame+1)
+        self.Seed_Corr_Win = np.zeros(shape = (winnum,ver_num,hor_num),dtype='f8')
+        self.Seed_Corr_Win_p = np.zeros(shape = (winnum,ver_num,hor_num),dtype='f8')
+
+        used_seed_response = Signal_Filter_1D(self.seed_response,HP_freq=HP,LP_freq=LP,fps = self.fps,keep_DC=False)
+        for i in tqdm(range(ver_num)):
+            for j in range(hor_num):
+                c_series = self.grid_drr[:,i,j]
+                c_series = Signal_Filter_1D(c_series,HP_freq=HP,LP_freq=LP,fps = self.fps,keep_DC=False)
+                for k in range(winnum):
+                    c_seed_part = used_seed_response[k*winstep_frame:k*winstep_frame+winlen_frame]
+                    c_series_part = c_series[k*winstep_frame:k*winstep_frame+winlen_frame]
+                    if corr == 'Pearson':
+                        c_r,c_p = stats.pearsonr(c_seed_part,c_series_part)
+                    elif corr == 'Spearman':
+                        c_r,c_p = stats.spearmanr(c_seed_part,c_series_part)
+                    self.Seed_Corr_Win[k,i,j] = c_r
+                    self.Seed_Corr_Win_p[k,i,j] = c_p
+
 
 #%% Test run part
 if __name__ == '__main__':
@@ -142,36 +187,13 @@ if __name__ == '__main__':
     fps = 5 # 4 binned 20Hz is 5Hz
 
 
-
-    SCG = Seed_Correlation_Grid(frame = raw_R_frame,fps = 5,grid_size=8,save_folder=r'D:\YJX\spon_data\240719_RF_OIS_TEST\Run02_RF_VBar_20Hz_2ms\Preprocessed\Seed_Tests')
-    SCG.Grid_Cutter()
-#%% GPT Generated grid method.
-
-# Assuming 'graph' is a 2D numpy array representing the graph
-fig, ax = plt.subplots(figsize=(8, 8))
-clip = 2
-base = SCG.raw_R_frame.mean(0)
-base = np.clip(base,base.mean()-base.std()*clip,base.mean()+base.std()*clip)
-ax.imshow(base,cmap = 'gist_gray')
-# Draw the vertical lines
-for x in range(8, 256, 8):
-    ax.axvline(x, color='red', linewidth=1,alpha = 0.5)
-# Draw the horizontal lines
-for y in range(8, 256, 8):
-    ax.axhline(y, color='red', linewidth=1,alpha = 0.5)
-# Add the grid numbers on the left and right sides
-for i in range(0, 32):
-    # Top
-    ax.text(i * 8 + 4, -12, str(i), ha='center', va='top', fontsize=8)
-    # Bottom
-    ax.text(i * 8 + 4, 268, str(i), ha='center', va='bottom', fontsize=8)
-    # Left
-    ax.text(-20, i * 8 + 4, str(i), ha='right', va='center', fontsize=8)
-    # Right
-    ax.text(264, i * 8 + 4, str(i), ha='left', va='center', fontsize=8)
-# Remove the axis ticks and labels
-ax.set_xticks([])
-ax.set_yticks([])
-
-# Show the plot
-plt.show()
+    #%% 
+    # SCG = Seed_Correlation_Grid(frame = raw_R_frame,fps = 5,grid_size=8,save_folder=r'D:\YJX\spon_data\240719_RF_OIS_TEST\Run02_RF_VBar_20Hz_2ms\Preprocessed\Seed_Tests')
+    # SCG.Grid_Cutter()
+    # # SCG.Seed_Determine([[6,22]])
+    # # SCG.Correlate_Grids('Spearman')
+    # #%% 
+    # SCG.Seed_Determine([[4,9],[4,10],[5,10]])
+    # # SCG.Correlate_Grids('Pearson')
+    # SCG.Correlate_Grid_Slide_Window(win_len = 120,win_step = 60)
+    # sns.heatmap(SCG.Seed_Corr_Win[0,:,:],center = 0,square=True)
