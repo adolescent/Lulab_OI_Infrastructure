@@ -69,11 +69,11 @@ class Sub_Map_Generator(object):
         return dRR_map,p_values
     
     def Get_Map(self,cond_A,cond_B,
-                clip_method = 'std',clip_value = 2,
+                clip_method = 'std',clip_value = 5,
                 used_frame = np.arange(4,16),
                 map = 'ttest',
                 save_flag = True,savepath = r'Results',graph_name = 'Test',
-                filter_flag = True,LP_sigma = 0.75,HP_sigma = 300
+                filter_flag = True,LP_sigma = 0.75,HP_sigma = 50,show_flag = True
                 ):
         '''
         This function will get subtraction map and do clip, Then visualize submap,and save on given folder.
@@ -109,12 +109,15 @@ class Sub_Map_Generator(object):
             HP_graph = gaussian_filter(input = clipped_graph, sigma = HP_sigma)
             LP_graph = gaussian_filter(input = clipped_graph, sigma = LP_sigma)
             filted_graph = (LP_graph-HP_graph)
+        else:
+            filted_graph = clipped_graph
 
         # normed_graph = filted_graph/max(abs(filted_graph.min()),filted_graph.max())
         # graph = (normed_graph+1)*32767
         normed_graph = (filted_graph-filted_graph.min())/(filted_graph.max()-filted_graph.min())
         graph = normed_graph*65535
-        plt.imshow(graph, cmap='gray', vmin=0, vmax=65535)
+        if show_flat == True:
+            plt.imshow(graph, cmap='gray', vmin=0, vmax=65535)
         if save_flag == True:
             cf.mkdir(savepath)
             whole_path = cf.join(savepath,f'{graph_name}.png')
@@ -122,7 +125,7 @@ class Sub_Map_Generator(object):
             cf.Save_Variable(savepath,f'{graph_name}_Raw',raw_drr)
             cf.Save_Variable(savepath,f'{graph_name}_p_value',p_values)
 
-        return graph,raw_drr,p_values
+        return graph,raw_drr,filted_graph,p_values
 
     def Condition_Response_Curve(self,mask = []):
     # generate response curve of all frames and plot in subplots.

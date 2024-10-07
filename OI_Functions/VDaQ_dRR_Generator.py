@@ -53,6 +53,8 @@ class BLK2DRR(object):
             for j in range(len(self.blk_lists)):
                 c_blk = c_id_frames[j,:,:,:]
                 c_base = c_blk[base_frame,:,:].mean(0)
+                if c_base.sum() == 0:
+                    raise ValueError(f'BLK{j} seems to be broken. remove before process.')
                 c_drr = (c_blk/c_base)-1
                 all_id_drr[j,:,:,:] = c_drr
             self.dRR_dic[i+1] = all_id_drr
