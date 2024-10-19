@@ -8,7 +8,7 @@ from OI_Functions.Map_Subtractor import Sub_Map_Generator
 import numpy as np
 import re
 import matplotlib.pyplot as plt
-from P1_OIS_Preprocessing import One_Key_OIS_Preprocessor
+from OIS_Preprocessing import One_Key_OIS_Preprocessor
 
 raw_folder = r'D:\YJX\spon_data\240719_RF_OIS_TEST'
 # preprocess first

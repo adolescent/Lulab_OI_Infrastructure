@@ -116,7 +116,7 @@ class Sub_Map_Generator(object):
         # graph = (normed_graph+1)*32767
         normed_graph = (filted_graph-filted_graph.min())/(filted_graph.max()-filted_graph.min())
         graph = normed_graph*65535
-        if show_flat == True:
+        if show_flag == True:
             plt.imshow(graph, cmap='gray', vmin=0, vmax=65535)
         if save_flag == True:
             cf.mkdir(savepath)
