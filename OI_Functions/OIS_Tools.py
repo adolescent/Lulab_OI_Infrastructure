@@ -136,6 +136,7 @@ def Graph_Bin_Reader_Core(filename):
     y_width = header_info[2]
 
     all_frames = np.zeros(shape = (total_framenum,x_width,y_width),dtype='u2')
+    all_heads = np.zeros(shape = (total_framenum,3),dtype='i4') # head info of img
 
     for i in range(total_framenum):
         c_graph_bytes = data_bytes[i*header_info[3]:(i+1)*header_info[3]]
@@ -143,8 +144,25 @@ def Graph_Bin_Reader_Core(filename):
         c_graph_head = np.array(struct.unpack(f'3q', c_graph_bytes[:24])) # data are recorded in int64, so 8 bit in 1 unit.
         img_data = np.array(struct.unpack(f'{x_width*y_width}H',c_graph_bytes[24:]))
         all_frames[i,:,:] = img_data.reshape((x_width,y_width))
-    
-    return header_info,all_frames
+        all_heads[i,:] = c_graph_head
+    file.close()
+    del data_bytes
+    # below is adjustment of data frame, all nan to missed trigger location.
+    num_adj = int(len(all_frames)+all_heads[:,1].sum())
+    all_frames_adj = np.zeros(shape = (num_adj,x_width,y_width),dtype='u2')
+    miss_num = all_heads[:,1] # number of missed trigger 
+    new_index = 0
+    for i in range(len(miss_num)):
+        # Insert NaN images based on miss_num
+        for _ in range(miss_num[i]):
+            all_frames_adj[new_index] = np.full((256, 256), np.nan)
+            new_index += 1
+        # Insert the original frame
+        all_frames_adj[new_index] = all_frames[i]
+        new_index += 1
+
+    del all_frames,all_heads
+    return header_info,all_frames_adj
 
 #%% F4 Read all bin image files.
 def Graph_Reader_All(img_file_lists,channel_names = ['Red'],mute = False):
@@ -183,13 +201,23 @@ def Graph_Reader_All(img_file_lists,channel_names = ['Red'],mute = False):
         print(f'Graph Resolution: {head_info[1]} x {head_info[2]} .')
         print(f'Graph Number: {all_graphs.shape[0]}, in {channel_num} channels.')
 
-    # cut all graphs into different channels, and save them as a dic.
-    common_num = len(all_graphs)//channel_num # ignore last few frames in complete.
+    ### refine the method to seperate channels.
+    # # cut all graphs into different channels, and save them as a dic.
+    # common_num = len(all_graphs)//channel_num # ignore last few frames in complete.
+    # all_graphs_channel = {}
+    # for i,c_channel in enumerate(channel_names):
+    #     all_graphs_channel[c_channel] = np.zeros(shape=(common_num,head_info[1],head_info[2]),dtype='u2')
+    # for i in range(common_num*channel_num):
+    #     all_graphs_channel[channel_names[i%channel_num]][i//channel_num,:,:] = all_graphs[i,:,:]
+
+    # seperate channel data
+    all_channel_data = [[] for _ in range(channel_num)]
+    for i in range(all_graphs.shape[0]):
+        all_channel_data[i % channel_num].append(all_graphs[i,:,:])
+    # save different channel into a dic
     all_graphs_channel = {}
     for i,c_channel in enumerate(channel_names):
-        all_graphs_channel[c_channel] = np.zeros(shape=(common_num,head_info[1],head_info[2]),dtype='u2')
-    for i in range(common_num*channel_num):
-        all_graphs_channel[channel_names[i%channel_num]][i//channel_num,:,:] = all_graphs[i,:,:]
+        all_graphs_channel[c_channel] = np.array(all_channel_data[i])
 
     return head_info,all_graphs_channel
     
