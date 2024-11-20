@@ -155,7 +155,7 @@ def Graph_Bin_Reader_Core(filename):
     for i in range(len(miss_num)):
         # Insert NaN images based on miss_num
         for _ in range(miss_num[i]):
-            all_frames_adj[new_index] = np.full((256, 256), np.nan)
+            all_frames_adj[new_index] = np.full((x_width, y_width), np.nan)
             new_index += 1
         # Insert the original frame
         all_frames_adj[new_index] = all_frames[i]
@@ -238,6 +238,7 @@ def Info_Reader(txt_path):
     # save element into dics.
     info_dics['Imaging_Freq'] = capture_freq
     info_dics['Channel_Names'] = img_channels
+
     return info_dics
 
 
