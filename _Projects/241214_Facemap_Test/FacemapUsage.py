@@ -10,15 +10,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # a = np.load(r'D:\_DataTemp\241213_Awake_Video\cutted_proc.npy',allow_pickle=True)
-a = np.load(r'D:\_DataTemp\241213_Awake_Video\full_video_proc.npy',allow_pickle=True)
+a = np.load(r'D:\_DataTemp\demo\full_video_proc.npy',allow_pickle=True)
 a = a.flatten()[0]
 #%%
 pupil_area = a['pupil'][0]['area']
-plt.plot(pupil_area[40000:50000])
+plt.plot(pupil_area[20000:30000])
 #%% show 3 whisker's response.
 import h5py    
 import numpy as np
-import pandas as pd
 
 # filename = r'D:\_DataTemp\241213_Awake_Video\cutted_FacemapPose.h5' #origin data value.
 filename = r'D:\_DataTemp\241213_Awake_Video\full_video_FacemapPose.h5' #origin data value.
