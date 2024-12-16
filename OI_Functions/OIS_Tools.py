@@ -165,7 +165,7 @@ def Graph_Bin_Reader_Core(filename):
     return header_info,all_frames_adj
 
 #%% F4 Read all bin image files.
-def Graph_Reader_All(img_file_lists,channel_names = ['Red'],mute = False):
+def Graph_Reader_All(img_file_lists,channel_names = ['Red'],mute = False,keepna = False):
     """
     Read All Graph bins together, return img stacks of each channel. 
 
@@ -179,6 +179,8 @@ def Graph_Reader_All(img_file_lists,channel_names = ['Red'],mute = False):
 
     mute : (bool),optional 
         If mute == False, info will be shown.
+    keepna : (bool),optional
+        Keep na for drop frame, or fill it with nearby value.
 
 
     Returns
@@ -215,9 +217,22 @@ def Graph_Reader_All(img_file_lists,channel_names = ['Red'],mute = False):
     for i in range(all_graphs.shape[0]):
         all_channel_data[i % channel_num].append(all_graphs[i,:,:])
     # save different channel into a dic
+    del all_graphs
     all_graphs_channel = {}
     for i,c_channel in enumerate(channel_names):
-        all_graphs_channel[c_channel] = np.array(all_channel_data[i])
+        c_channel_data = np.array(all_channel_data[i])
+        if keepna == False: # fill nan with previous value.
+            zero_ids = np.where(c_channel_data.sum(axis=(1,2))==0)[0]
+            if 0 in zero_ids: # first frame is nan, this shall be very rare.
+                print('First frame is zero, fill global average.')
+                c_channel_data[0] = c_channel_data.mean(0)
+                zero_ids.remove(0)
+            for i,c_id in enumerate(zero_ids):
+                c_channel_data[c_id] = c_channel_data[c_id-1]
+            
+        all_graphs_channel[c_channel] = c_channel_data
+
+
 
     return head_info,all_graphs_channel
     

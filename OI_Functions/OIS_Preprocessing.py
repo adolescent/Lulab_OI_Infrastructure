@@ -24,7 +24,9 @@ import time
 
 
 
-def Single_Folder_Processor(path,save_format = 'python',subfolder = 'Preprocessed'):
+
+
+def Single_Folder_Processor(path,save_format = 'python',subfolder = 'Preprocessed',keepna = False):
 
     """
     Get all file names of specific type.
@@ -37,7 +39,8 @@ def Single_Folder_Processor(path,save_format = 'python',subfolder = 'Preprocesse
         Determine which type will we save data. 
     subfolder : (str),optional
         Subfolder to save data.
-
+    keepna : (bool),optional
+        Whether keep na, or fill na with nearby values.
     Returns
     -------
     Name_Lists : (list)
@@ -61,7 +64,7 @@ def Single_Folder_Processor(path,save_format = 'python',subfolder = 'Preprocesse
     # get all channel datas
     channel_names = Info_Reader(info_path)['Channel_Names']
     _,ai_signals = Analog_Reader_All(analog_file_names)
-    _,graphs_all = Graph_Reader_All(img_file_names,channel_names)
+    _,graphs_all = Graph_Reader_All(img_file_names,channel_names,keepna == keepna)
 
     # save datas in format we want.
     if save_format == 'python':# save with pyton npy.
@@ -72,7 +75,7 @@ def Single_Folder_Processor(path,save_format = 'python',subfolder = 'Preprocesse
             avr_graph = c_graphs.mean(0).astype('u2')
             plt.imsave(cf.join(save_path,f'{c_name}.png'), avr_graph, cmap='gray', vmin=avr_graph.min(), vmax=avr_graph.mean()+5*avr_graph.std(), format='png')
             np.save(cf.join(save_path,f'{c_name}.npy'),c_graphs)
-    elif save_format == 'matlab':
+    elif save_format == 'matlab': # save mat seems not working, avoid using it.
         savemat(cf.join(save_path,'ai_series.mat'),{'ai_signals':ai_signals})
         for i,c_name in enumerate(channel_names):
             c_graphs = graphs_all[c_name]
