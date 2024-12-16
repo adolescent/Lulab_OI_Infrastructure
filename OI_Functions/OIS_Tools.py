@@ -221,6 +221,7 @@ def Graph_Reader_All(img_file_lists,channel_names = ['Red'],mute = False,keepna 
     all_graphs_channel = {}
     for i,c_channel in enumerate(channel_names):
         c_channel_data = np.array(all_channel_data[i])
+        
         if keepna == False: # fill nan with previous value.
             zero_ids = np.where(c_channel_data.sum(axis=(1,2))==0)[0]
             if 0 in zero_ids: # first frame is nan, this shall be very rare.

@@ -64,7 +64,7 @@ def Single_Folder_Processor(path,save_format = 'python',subfolder = 'Preprocesse
     # get all channel datas
     channel_names = Info_Reader(info_path)['Channel_Names']
     _,ai_signals = Analog_Reader_All(analog_file_names)
-    _,graphs_all = Graph_Reader_All(img_file_names,channel_names,keepna == keepna)
+    _,graphs_all = Graph_Reader_All(img_file_names,channel_names,keepna = keepna)
 
     # save datas in format we want.
     if save_format == 'python':# save with pyton npy.
