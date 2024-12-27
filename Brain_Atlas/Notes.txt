@@ -1,0 +1,4 @@
+Bregma are coords in range Y,X
+
+Boundaries in sequence (L,R)
+
