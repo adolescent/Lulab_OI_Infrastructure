@@ -2,12 +2,10 @@
 
 #%%
 import seaborn as sns
-import nrrd
-import OI_Functions.Common_Functions as cf
+import Common_Functions as cf
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import ccf_streamlines.projection as ccfproj # allen projector
 from tqdm import tqdm
 import copy
 
@@ -19,62 +17,49 @@ class Mask_Generator(object):
 
         breg = cf.Load_Variable('Bregma.pkl') # breg in seq y,x
         # self.breg = 
-        pass
+        # load area map and mask for current bin. method below is dumb, but it works.
+        if bin == 1:
+            self.breg = breg
+            self.idmap = np.load('Raw_Area_ID.npy')
+            self.masks = cf.Load_Variable('Brain_Area_Masks.pkl')
+        elif bin == 2:
+            self.breg = (int(breg[0]/2),int(breg[1]/2))
+            self.idmap = np.load('Raw_Area_ID_bin2.npy')
+            self.masks = cf.Load_Variable('Brain_Area_Masks_bin2.pkl')
+        elif bin == 4:
+            self.breg = (int(breg[0]/4),int(breg[1]/4))
+            self.idmap = np.load('Raw_Area_ID_bin4.npy')
+            self.masks = cf.Load_Variable('Brain_Area_Masks_bin4.pkl')
 
-    def Pix_Label(pix):
-        pass
+        self.all_areas = list(set(self.masks['Area']))
 
-    def Area_Mask(area,LR = 'L'):
-        pass
+    def Pix_Label(self,y,x): # insequence Y,X
+        
+        c_id = self.idmap[y,x]
+        if c_id == 0:
+            print('Pixel out of visible cortex.')
+            area_name = 'Outside'
+            hemi = 'Both'
+        else:
+            area_name = self.masks.loc[self.masks['ID'] == c_id]['Area'].iloc[0]
+            hemi = self.masks.loc[self.masks['ID'] == c_id]['LR'].iloc[0]
+            print(f'Pixel in area {area_name}, on hemisphere {hemi}')
+
+        return area_name,hemi
+
+
+    def Get_Mask(self,area,LR = 'L'):
+        hemi = self.masks.groupby('LR').get_group(LR)
+        c_mask = hemi.loc[hemi['Area']==area]['Mask'].iloc[0]
+        return c_mask
 
     
-#%%
-import cv2
-import numpy as np
-import time
-
-# Create a 512x512 black image
-image = np.zeros((512, 512, 3), dtype=np.uint8)
-
-# Variable to track if a point has been selected
-point_selected = False
-selected_point = None  # Variable to store the selected point coordinates
-
-# Function to capture mouse events
-def get_coordinates(event, x, y, flags, param):
-    global point_selected, selected_point
-    if event == cv2.EVENT_LBUTTONDOWN and not point_selected:
-        selected_point = (x, y)  # Store the coordinates in the variable
-        print(f"Selected point: {selected_point}")  # Print the coordinates
-        cv2.circle(image, (x, y), 5, (0, 255, 0), -1)  # Draw a circle on the selected point
-        cv2.imshow("Graph", image)  # Update the display
-        point_selected = True  # Mark that a point has been selected
-
-# Display the image in a window
-cv2.imshow("Graph", image)
-cv2.setMouseCallback("Graph", get_coordinates)
-
-# Wait until a point is selected
-while not point_selected:
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break  # Allow quitting with 'q'
-
-# Suspend for 5 seconds
-# if point_selected:
-#     time.sleep(3)
-# Close the window
-cv2.destroyAllWindows()
-
-cv2.imshow("Graph", image)
-cv2.waitKey(1)
-
-
-# Checkpoint
-user_input = input("Do you want to continue? (Y/N): ").strip().upper()
-if user_input != 'Y':
-    cv2.destroyAllWindows()
-    raise ValueError("Process terminated by user.")
-else:
-    print("Continuing with the process...")
-    cv2.destroyAllWindows()
-    print(f"Using selected point coordinates: {selected_point}")
+#%% test tun
+if __name__ == '__main__':
+    MG = Mask_Generator(bin = 4)
+    # plt.imshow(MG.idmap)
+    all_areas = MG.all_areas
+    # mask = MG.Get_Mask()
+    MG.Pix_Label(220,225)
+    c_mask = MG.Get_Mask('VISp','R')
+    plt.imshow(c_mask)
