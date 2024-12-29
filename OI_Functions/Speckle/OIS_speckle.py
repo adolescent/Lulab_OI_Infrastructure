@@ -90,13 +90,15 @@ def generate_speckle_video (path,contrast_maps,fps = 15):
     #plotable = np.clip(contrast_maps,0,255)
     #frames = plotable*255/plotable.max()
     
-    arr_normalized = np.clip(contrast_maps / contrast_maps.max(), 0, 1)
+    #arr_normalized = np.clip(contrast_maps / contrast_maps.max(), 0, 1)
     # 转换为 uint8
-    frames = (arr_normalized * 255).astype(np.uint8)
+    #frames = (arr_normalized * 255).astype(np.uint8)
+    frames = (contrast_maps * 255).astype(np.uint8)
+    
     #frames = contrast_maps
     width = frames.shape[2]
     height = frames.shape[1]
-    outputfile = cf.join(path,'Speckle_Video.avi')   #our output filename
+    outputfile = cf.join(path,'Video.avi')   #our output filename
     writer = skvideo.io.FFmpegWriter(outputfile, outputdict={
     '-vcodec': 'rawvideo',  #use the h.264 codec
     #'-vcodec': 'libx264',  # 使用libx264编码
@@ -109,7 +111,7 @@ def generate_speckle_video (path,contrast_maps,fps = 15):
     '-s':'{}x{}'.format(width,height)
     }) 
     for frame in tqdm(frames):
-         # cv2.imshow('display',frame)
+         cv2.imshow('display',frame)
          writer.writeFrame(frame)  #write the frame as RGB not BGR
          # time.sleep(1/fps)
     writer.close() #close the writer
