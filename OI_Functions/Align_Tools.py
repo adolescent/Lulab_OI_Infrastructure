@@ -10,8 +10,8 @@ import time
 from Brain_Atlas.Atlas_Mask import Mask_Generator
 import matplotlib.pyplot as plt
 import copy
+from tqdm import tqdm
 
-avr = cv2.imread(r'D:\_DataTemp\Graph_Affine\avr_graph.png',0)
 
 #%%
 
@@ -101,25 +101,37 @@ class Match_Pattern(Mask_Generator): # success parent class
         padded_graph = np.pad(self.avr, ((self.pad_num, self.pad_num), (self.pad_num, self.pad_num)), mode='constant', constant_values=0)
         self.breg_pad = (int(self.realbreg[0]+self.pad_num),int(self.realbreg[1]+self.pad_num))
         # extend graph for 
-        rot_mat = cv2.getRotationMatrix2D((self.breg_pad[1],self.breg_pad[0]),self.rot_angle,self.scale)
+        self.rot_mat = cv2.getRotationMatrix2D((self.breg_pad[1],self.breg_pad[0]),self.rot_angle,self.scale)
 
-        result_raw = cv2.warpAffine(padded_graph, rot_mat,padded_graph.shape[1::-1], flags=cv2.INTER_LINEAR)
+        result_raw = cv2.warpAffine(padded_graph, self.rot_mat,padded_graph.shape[1::-1], flags=cv2.INTER_LINEAR)
         # if self.realbreg[0]>self.reallamb[0]: # add another 180 to rotation.
         #     result = cv2.rotate(result, cv2.ROTATE_180)
-        LU_point = [MP.breg_pad[0]-MP.breg[0],MP.breg_pad[1]-MP.breg[1]]
-        self.result = result_raw[LU_point[0]:LU_point[0]+self.height,LU_point[1]:LU_point[1]+self.width]
-        plt.imshow(self.result,cmap='gray')
-        plt.imshow(self.idmap_sym,alpha = 0.2,cmap='jet')
+        self.LU_point = [self.breg_pad[0]-self.breg[0],self.breg_pad[1]-self.breg[1]]
+        self.result = result_raw[self.LU_point[0]:self.LU_point[0]+self.height,self.LU_point[1]:self.LU_point[1]+self.width]
+        show_img = cv2.circle(self.result,(self.breg[1],self.breg[0]),3,(0,0,255),-1)
+        plt.imshow(show_img,cmap='gray')
+        plt.imshow(self.idmap_sym,alpha = 0.15,cmap='jet')
 
     
     def Transform_Series(self,stacks):
-        print('Fitting')
+        graph_num = len(stacks)
+        transformed_stacks = np.zeros(shape = (graph_num,self.height,self.width),dtype='u2')
+        
+        # transform each single frame.
+        for i in tqdm(range(graph_num)):
+            c_img = stacks[i,:,:].astype('f8')
+            padded_img = np.pad(c_img, ((self.pad_num, self.pad_num), (self.pad_num, self.pad_num)), mode='constant', constant_values=0)
+            rotted_img = cv2.warpAffine(padded_img, self.rot_mat,padded_img.shape[1::-1], flags=cv2.INTER_LINEAR)
+            cutted_img = rotted_img[self.LU_point[0]:self.LU_point[0]+self.height,self.LU_point[1]:self.LU_point[1]+self.width]
+            transformed_stacks[i,:,:]=cutted_img
+
+        return transformed_stacks
 
 
 
 
 if __name__ == '__main__':
-
+    avr = cv2.imread(r'D:\_DataTemp\Graph_Affine\avr_graph.png',0)
     MP = Match_Pattern(avr,4)
     MP.Select_Anchor()
     MP.Fit_Align_Matrix()
