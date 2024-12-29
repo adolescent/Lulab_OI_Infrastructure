@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
+import os
 import copy
 
 class Mask_Generator(object):
@@ -14,23 +15,24 @@ class Mask_Generator(object):
     name = 'Mask of visable parts'
 
     def __init__(self,bin=4) -> None:# bin is the only require od 
-
-        breg = cf.Load_Variable('Bregma.pkl') # breg in seq y,x
+        base_path = os.path.dirname(__file__)
+        breg = cf.Load_Variable(cf.join(base_path,'Bregma.pkl')) # breg in seq y,x
         # self.breg = 
         # load area map and mask for current bin. method below is dumb, but it works.
         if bin == 1:
             self.breg = breg
-            self.idmap = np.load('Raw_Area_ID.npy')
-            self.masks = cf.Load_Variable('Brain_Area_Masks.pkl')
+            self.idmap = np.load(cf.join(base_path,'Raw_Area_ID.npy'))
+            self.masks = cf.Load_Variable(cf.join(base_path,'Brain_Area_Masks.pkl'))
         elif bin == 2:
             self.breg = (int(breg[0]/2),int(breg[1]/2))
-            self.idmap = np.load('Raw_Area_ID_bin2.npy')
-            self.masks = cf.Load_Variable('Brain_Area_Masks_bin2.pkl')
+            self.idmap = np.load(cf.join(base_path,'Raw_Area_ID_bin2.npy'))
+            self.masks = cf.Load_Variable(cf.join(base_path,'Brain_Area_Masks_bin2.pkl'))
         elif bin == 4:
             self.breg = (int(breg[0]/4),int(breg[1]/4))
-            self.idmap = np.load('Raw_Area_ID_bin4.npy')
-            self.masks = cf.Load_Variable('Brain_Area_Masks_bin4.pkl')
-
+            self.idmap = np.load(cf.join(base_path,'Raw_Area_ID_bin4.npy'))
+            self.masks = cf.Load_Variable(cf.join(base_path,'Brain_Area_Masks_bin4.pkl'))
+        else:
+            raise IOError(f'Bin {bin} not supported.')
         self.all_areas = list(set(self.masks['Area']))
 
     def Pix_Label(self,y,x): # insequence Y,X
