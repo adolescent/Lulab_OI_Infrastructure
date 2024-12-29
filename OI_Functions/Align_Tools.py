@@ -71,18 +71,18 @@ class Match_Pattern(Mask_Generator): # success parent class
         cv2.imshow("Graph", img)
         cv2.waitKey(1)
         # Checkpoint
-        user_input = input("Do you want to continue? (Y/N): ").strip().upper()
-        if user_input != 'Y':
-            cv2.destroyAllWindows()
-            raise ValueError("Process terminated by user.")
-        else:
-            print("Continuing with the process...")
-            cv2.destroyAllWindows()
-            self.anchor = np.array(self.anchor)
-            self.realbreg = self.anchor[0,:]
-            self.reallamb = self.anchor[1,:]
-            self.point_demo = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
-            print(f"Select points saved in self.anchor")
+        # user_input = input("Do you want to continue? (Y/N): ").strip().upper()
+        # if user_input != 'Y':
+        #     cv2.destroyAllWindows()
+        #     raise ValueError("Process terminated by user.")
+        # else:
+        print("Continuing with the process...")
+        cv2.destroyAllWindows()
+        self.anchor = np.array(self.anchor)
+        self.realbreg = self.anchor[0,:]
+        self.reallamb = self.anchor[1,:]
+        self.point_demo = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
+        print(f"Select points saved in self.anchor")
 
     def Fit_Align_Matrix(self): # this part will return 
 
