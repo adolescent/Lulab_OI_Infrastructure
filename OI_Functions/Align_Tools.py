@@ -9,122 +9,120 @@ import numpy as np
 import time
 from Brain_Atlas.Atlas_Mask import Mask_Generator
 import matplotlib.pyplot as plt
+import copy
+
+avr = cv2.imread(r'D:\_DataTemp\Graph_Affine\avr_graph.png',0)
 
 #%%
-# Define the points A, B, C, D, E
-import cv2
-import numpy as np
 
-# Load the image
-img = np.zeros(shape = (256,256))
-img[100:110,:]=1
+class Match_Pattern(Mask_Generator): # success parent class
 
-# Define the special points (A, B, C, D, E)
-points = np.array([
-    [50, 100],  # Point A
-    [70, 110],  # Point B
-    [90, 120],  # Point C
-    [110, 130], # Point D
-    [130, 140]  # Point E
-], dtype=np.float32)
+    name = 'Align Stack to pattern'
 
-# Step 1: Fit a line to the points (optional, if needed for rotation)
-x = points[:, 0]
-y = points[:, 1]
-fit = np.polyfit(x, y, 1)  # Linear fit
-m, b = fit  # slope and intercept
+    def __init__(self,avr,bin=4): # avr are averaged graph,
+        super().__init__(bin)
+        # self.MG = Mask_Generator(bin=bin)
+        self.height,self.width = self.idmap.shape
+        print(f'After Align Resolution:{self.height}x{self.width}')
+        self.avr = ((avr/avr.max())*255).astype('u1')
+        self.lbd = 420/bin # pix distance between lambda and bregma. 4.2mm
+        self.pad_num = int(800/bin) # number of pad used for graph rotation
 
-# Step 2: Calculate the angle to rotate to vertical
-angle = np.arctan(m) * 180 / np.pi  # convert to degrees
-rotation_angle = -angle  # we want to rotate counter-clockwise
+        self.idmap_sym = copy.deepcopy(self.idmap)
+        self.idmap_sym[self.idmap_sym>32] -= 31
 
-# Step 3: Rotate the image around the midpoint of A and B
-center = np.mean(points[:2], axis=0)  # midpoint between A and B
-M = cv2.getRotationMatrix2D((center[0], center[1]), rotation_angle, 1.0)
-rotated_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]))
+    def Select_Anchor(self): # select anchor 
 
-# Step 4: Rescale the distance between points A and B to 105 pixels
-A_rotated = np.dot(M[:, :2], points[0]) + M[:, 2]
-B_rotated = np.dot(M[:, :2], points[1]) + M[:, 2]
-current_distance = np.linalg.norm(B_rotated - A_rotated)
+        self.anchor = []# anchor points. in seq Y,X
+        img = cv2.cvtColor(self.avr,cv2.COLOR_GRAY2RGB) # set graph to color
 
-# Scale factor
-desired_distance = 105
-scale_factor = desired_distance / current_distance
+        def selector(event,x,y,flags, param):# define point selector first
+            if event == cv2.EVENT_LBUTTONDOWN:
+                self.anchor.append([y,x])
+                if len(self.anchor) == 1:
+                    color = (0, 0, 255) # red for bregma
+                elif len(self.anchor) == 2:
+                    color = (0,255,0)
+                else:
+                    color = (255,0,0)
 
-# Rescale the image
-rescaled_img = cv2.resize(rotated_img, None, fx=scale_factor, fy=scale_factor)
+                # draw point on graph
+                cv2.circle(img, (x, y), 3, color, -1) 
+                cv2.imshow("Image", img)
 
-# Display the results
-cv2.imshow('Original Image', img)
-cv2.imshow('Rotated Image', rotated_img)
-cv2.imshow('Rescaled Image', rescaled_img)
+        cv2.imshow("Image", img)
+        cv2.setMouseCallback("Image", selector)
+        flagbreg = False
+        flaglamb = False
+        flagother = False
+        while len(self.anchor) < 5:
+            if len(self.anchor)==0 and flagbreg == False:
+                print('Selecting Bregma..')
+                flagbreg = True
+            if len(self.anchor)==1 and flaglamb == False:
+                print('Selecting Lambda..')
+                flaglamb = True
+            if len(self.anchor)>1 and flagother == False:
+                print('Selecting Other Points..')
+                flagother = True
+            cv2.waitKey(1)
+        cv2.destroyAllWindows()
+        ### After this we can select 5 points. Then we need to determine whether ok to continue.
+        cv2.imshow("Graph", img)
+        cv2.waitKey(1)
+        # Checkpoint
+        user_input = input("Do you want to continue? (Y/N): ").strip().upper()
+        if user_input != 'Y':
+            cv2.destroyAllWindows()
+            raise ValueError("Process terminated by user.")
+        else:
+            print("Continuing with the process...")
+            cv2.destroyAllWindows()
+            self.anchor = np.array(self.anchor)
+            self.realbreg = self.anchor[0,:]
+            self.reallamb = self.anchor[1,:]
+            self.point_demo = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
+            print(f"Select points saved in self.anchor")
 
-# Wait for a key press and close windows
-cv2.waitKey(150)
-cv2.destroyAllWindows()
+    def Fit_Align_Matrix(self): # this part will return 
 
-# New coordinates of point A after transformations
-new_A = A_rotated * scale_factor
-print(f"New coordinates of Point A: {new_A}")
+        # calculate rescale index.
+        real_lbd = np.linalg.norm(self.realbreg-self.reallamb)
+        self.scale = self.lbd/real_lbd
 
-#%%
-# Create a 512x512 black image
-image = np.zeros((512, 512, 3), dtype=np.uint8)
+        # rotation and rescale
+        self.slope,_ = np.polyfit(self.anchor[:,1],self.anchor[:,0] , 1)
+        self.rot_angle = 90+np.degrees(np.arctan(self.slope))
+        if self.realbreg[0]>self.reallamb[0]:
+            print('Graph is upside down, be aware.')
+            self.rot_angle += 180
 
-# Variable to track if a point has been selected
-point_selected = False
-selected_point = None  # Variable to store the selected point coordinates
+        # transform.
+        padded_graph = np.pad(self.avr, ((self.pad_num, self.pad_num), (self.pad_num, self.pad_num)), mode='constant', constant_values=0)
+        self.breg_pad = (int(self.realbreg[0]+self.pad_num),int(self.realbreg[1]+self.pad_num))
+        # extend graph for 
+        rot_mat = cv2.getRotationMatrix2D((self.breg_pad[1],self.breg_pad[0]),self.rot_angle,self.scale)
 
-# Function to capture mouse events
-def get_coordinates(event, x, y, flags, param):
-    global point_selected, selected_point
-    if event == cv2.EVENT_LBUTTONDOWN and not point_selected:
-        selected_point = (x, y)  # Store the coordinates in the variable
-        print(f"Selected point: {selected_point}")  # Print the coordinates
-        cv2.circle(image, (x, y), 5, (0, 255, 0), -1)  # Draw a circle on the selected point
-        cv2.imshow("Graph", image)  # Update the display
-        point_selected = True  # Mark that a point has been selected
+        result_raw = cv2.warpAffine(padded_graph, rot_mat,padded_graph.shape[1::-1], flags=cv2.INTER_LINEAR)
+        # if self.realbreg[0]>self.reallamb[0]: # add another 180 to rotation.
+        #     result = cv2.rotate(result, cv2.ROTATE_180)
+        LU_point = [MP.breg_pad[0]-MP.breg[0],MP.breg_pad[1]-MP.breg[1]]
+        self.result = result_raw[LU_point[0]:LU_point[0]+self.height,LU_point[1]:LU_point[1]+self.width]
+        plt.imshow(self.result,cmap='gray')
+        plt.imshow(self.idmap_sym,alpha = 0.2,cmap='jet')
 
-# Display the image in a window
-cv2.imshow("Graph", image)
-cv2.setMouseCallback("Graph", get_coordinates)
-
-# Wait until a point is selected
-while not point_selected:
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break  # Allow quitting with 'q'
-
-# Suspend for 5 seconds
-# if point_selected:
-#     time.sleep(3)
-# Close the window
-cv2.destroyAllWindows()
-
-cv2.imshow("Graph", image)
-cv2.waitKey(1)
+    
+    def Transform_Series(self,stacks):
+        print('Fitting')
 
 
-# Checkpoint
-user_input = input("Do you want to continue? (Y/N): ").strip().upper()
-if user_input != 'Y':
-    cv2.destroyAllWindows()
-    raise ValueError("Process terminated by user.")
-else:
-    print("Continuing with the process...")
-    cv2.destroyAllWindows()
-    print(f"Using selected point coordinates: {selected_point}")
-#%%
-# %matplotlib qt
-import matplotlib.pyplot as plt
 
-# Create a sample plot
-x = [1, 2, 3, 4, 5]
-y = [2, 3, 5, 7, 11]
-plt.plot(x, y, 'o-')
-plt.title('Interactive Plot')
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
 
-# Show the plot
-plt.show()
+if __name__ == '__main__':
+
+    MP = Match_Pattern(avr,4)
+    MP.Select_Anchor()
+    MP.Fit_Align_Matrix()
+    # print(MP.anchor)
+
+
