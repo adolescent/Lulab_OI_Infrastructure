@@ -16,7 +16,9 @@ Pipelines are as follows:
 ################## Correlation Methods
 1. Seed point Correlation(window-slide)
 2. Correlation matrix(re-arrange added)(ignore area less than 50 pix inside.)
-3. 2-area(can combine area as required) specturm analysis.
+3. 2-area(can combine area as required) specturm analysis(wavelet and slide window fourier)
+4. Phase Locking Analysis(Hilbert transform)
+5. 
 
 
 ################### Pattern Recognition
@@ -26,5 +28,6 @@ Pipelines are as follows:
 3. Hierarchical clustering pattern Recognition
 4. Ensemble Timecourse Repeat Analysis.(Peakfind & Waittime)
 5. Neuro-Trace of spontaneous activity
+6. 
 
 
