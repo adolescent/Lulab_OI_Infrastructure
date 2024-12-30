@@ -92,7 +92,7 @@ class Match_Pattern(Mask_Generator): # success parent class
 
         # rotation and rescale
         self.slope,_ = np.polyfit(self.anchor[:,1],self.anchor[:,0] , 1)
-        self.rot_angle = 90+np.degrees(np.arctan(self.slope))
+        self.rot_angle = np.degrees(np.arctan(self.slope))-90
         if self.realbreg[0]>self.reallamb[0]:
             print('Graph is upside down, be aware.')
             self.rot_angle += 180
