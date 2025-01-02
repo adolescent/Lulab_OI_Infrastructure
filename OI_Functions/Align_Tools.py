@@ -19,13 +19,13 @@ class Match_Pattern(Mask_Generator): # success parent class
 
     name = 'Align Stack to pattern'
 
-    def __init__(self,avr,bin=4): # avr are averaged graph,
+    def __init__(self,avr,bin=4,lbd=4.2): # avr are averaged graph,
         super().__init__(bin)
         # self.MG = Mask_Generator(bin=bin)
         self.height,self.width = self.idmap.shape
         print(f'After Align Resolution:{self.height}x{self.width}')
         self.avr = ((avr/avr.max())*255).astype('u1')
-        self.lbd = 420/bin # pix distance between lambda and bregma. 4.2mm
+        self.lbd = lbd*100/bin # pix distance between lambda and bregma. 4.2mm
         self.pad_num = int(800/bin) # number of pad used for graph rotation
 
         self.idmap_sym = copy.deepcopy(self.idmap)
