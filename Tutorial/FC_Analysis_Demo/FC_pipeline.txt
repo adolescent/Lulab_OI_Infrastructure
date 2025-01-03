@@ -1,5 +1,5 @@
 This folder will provide a full demonstration of functional connection analysis on OIS 200 Captured Data.
-The demo data was located at *datapath*
+The demo data was located at 'D:\ZR\_Data_Temp\Ois200_Data\Full_Demo'
 
 Pipelines are as follows:
 
