@@ -56,6 +56,8 @@ class Mask_Generator(object):
         return c_mask
 
     
+
+    
 #%% test tun
 if __name__ == '__main__':
     MG = Mask_Generator(bin = 4)

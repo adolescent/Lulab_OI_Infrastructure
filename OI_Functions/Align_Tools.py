@@ -106,7 +106,7 @@ class Match_Pattern(Mask_Generator): # success parent class
         # extend graph for 
         self.rot_mat = cv2.getRotationMatrix2D((self.breg_pad[1],self.breg_pad[0]),self.rot_angle,self.scale)
 
-        result_raw = cv2.warpAffine(padded_graph, self.rot_mat,padded_graph.shape[1::-1], flags=cv2.INTER_LINEAR)
+        result_raw = cv2.warpAffine(padded_graph, self.rot_mat,padded_graph.shape[1::-1], flags=cv2.INTER_NEAREST)
         # if self.realbreg[0]>self.reallamb[0]: # add another 180 to rotation.
         #     result = cv2.rotate(result, cv2.ROTATE_180)
         self.LU_point = [self.breg_pad[0]-self.breg[0],self.breg_pad[1]-self.breg[1]]
@@ -116,7 +116,7 @@ class Match_Pattern(Mask_Generator): # success parent class
         plt.imshow(self.idmap_sym,alpha = 0.15,cmap='jet')
 
     
-    def Transform_Series(self,stacks):
+    def Transform_Series(self,stacks,intra = cv2.INTER_NEAREST):
         graph_num = len(stacks)
         transformed_stacks = np.zeros(shape = (graph_num,self.height,self.width),dtype='u2')
         
@@ -124,7 +124,7 @@ class Match_Pattern(Mask_Generator): # success parent class
         for i in tqdm(range(graph_num)):
             c_img = stacks[i,:,:].astype('f8')
             padded_img = np.pad(c_img, ((self.pad_num, self.pad_num), (self.pad_num, self.pad_num)), mode='constant', constant_values=0)
-            rotted_img = cv2.warpAffine(padded_img, self.rot_mat,padded_img.shape[1::-1], flags=cv2.INTER_LINEAR)
+            rotted_img = cv2.warpAffine(padded_img, self.rot_mat,padded_img.shape[1::-1], flags=intra)
             cutted_img = rotted_img[self.LU_point[0]:self.LU_point[0]+self.height,self.LU_point[1]:self.LU_point[1]+self.width]
             transformed_stacks[i,:,:]=cutted_img
 
