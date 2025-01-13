@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import Common_Functions as cf
 import pandas as pd
 from tqdm import tqdm
-
+from scipy.stats import pearsonr
+import copy
 
 
 class Atlas_Data_Tools(object):
@@ -18,7 +19,7 @@ class Atlas_Data_Tools(object):
 
     def __init__(self,series,bin=4,min_pix = 20):
         self.series = series
-        self.avr = series.mean(0)
+        self.std = series.std(0)
         self.MG = Mask_Generator(bin=4)
         self.all_area_name = self.MG.all_areas
         self.Area_Function = {}
@@ -40,10 +41,11 @@ class Atlas_Data_Tools(object):
     def Get_All_Area_Response(self):
         # This function will average response by area.
         self.Area_Response = pd.DataFrame(columns = ['Area','Function','LR','pixnum','Series'])
+        print('Calculating All Brain Area Response...')
         for i,cloc in tqdm(enumerate(self.all_area_name)):
             for j,hemi in enumerate(['L','R']):
                 c_mask = self.MG.Get_Mask(cloc,hemi)
-                combined_mask = ((self.avr*c_mask)!=0)
+                combined_mask = ((self.std*c_mask)!=0)
                 if combined_mask.sum()>self.min_pix:
                     c_response = self.series[:,combined_mask].mean(1)
                     c_func = self.Area_Function[cloc]
@@ -51,8 +53,8 @@ class Atlas_Data_Tools(object):
 
         # after generation, re arrange matrix by LR and function.
         # self.Area_Response = self.Area_Response.sort_values(by=['LR','Function'],ascending=False).reset_index(drop=True)
-        part_L = self.Area_Response.groupby('LR').get_group('L').sort_values(by=['Function'],ascending = False)
-        part_R = self.Area_Response.groupby('LR').get_group('R').sort_values(by=['Function'],ascending = True)
+        part_L = self.Area_Response.groupby('LR').get_group('L').sort_values(by=['Function','Area'],ascending = False)
+        part_R = self.Area_Response.groupby('LR').get_group('R').sort_values(by=['Function','Area'],ascending = True)
         self.Area_Response = pd.concat((part_L,part_R),axis = 0).reset_index(drop = True)
 
 
@@ -66,11 +68,55 @@ class Atlas_Data_Tools(object):
             print('Area Response not generated yet.')
             self.Get_All_Area_Response()
 
+        # write area response into a pd frame.
+        response_heatmap = pd.DataFrame(columns = np.arange(len(self.Area_Response.iloc[0,-1])))
+        print('Combining Heatmap of Brain Area Response...')
+        for i in tqdm(range(len(self.Area_Response))):
+            c_slice = self.Area_Response.iloc[i,:]
+            c_name = c_slice['Area']+'_'+c_slice['LR']
+            response_heatmap.loc[c_name,:] = c_slice['Series']
+        self.Area_Response_Heatmap = response_heatmap.astype('f8')
+        return self.Area_Response_Heatmap
 
+    def Get_Corr_Matrix(self,win_size = 600,win_step = 150,keep_unilateral = True):
+        # this function will calculate corr matrix for area pair we get.
 
+        all_area_name = list(set(self.Area_Response['Area']))
+        used_area_response = copy.deepcopy(self.Area_Response)
 
+        # delete areas that have no contralateral parts.
+        if keep_unilateral == False: 
+            for i,c_name in enumerate(all_area_name):
+                if (self.Area_Response['Area']==c_name).sum() <2:
+                    used_area_response = used_area_response[used_area_response['Area']!= c_name] # drop uni lateral area.
+        used_area_response['Fullname'] = used_area_response['Area']+'_'+used_area_response['LR']
+        used_area_fullname = list(used_area_response['Fullname'])
 
+        # get corr matrix for given data frame.
+        frame_num = len(self.Area_Response.iloc[0,-1])
+        win_num = 1+(frame_num-win_size)//win_step
+        self.Corr_Matrix = {}
+        print('Calculating Correlation Matrix of given data frames.')
+        for i in tqdm(range(win_num)):
+            c_start = i*win_step
+            c_end = i*win_step+win_size
+            c_corr_frame = pd.DataFrame(0.0,columns = used_area_fullname,index = (used_area_fullname))
+            for j,name_A in enumerate(used_area_fullname):
+                series_A = used_area_response[used_area_response['Fullname']==name_A]['Series'].iloc[0][c_start:c_end]
+                for k,name_B in enumerate(used_area_fullname):
+                    series_B = used_area_response[used_area_response['Fullname']==name_B]['Series'].iloc[0][c_start:c_end]
+                    c_r,_ = pearsonr(series_A,series_B)
+                    c_corr_frame.loc[name_A,name_B]=c_r
+            self.Corr_Matrix[i] = c_corr_frame
+        return self.Corr_Matrix
 
+        def Contralateral_Similarity(self,win_size = 600,win_step = 150):
+            # this function will generate pix-wised contralateral corr matrix.
+            pass
+
+        def Contralateral_Similarity_Area(self,win_size = 600,win_step = 150):
+            # this function will generate brain area-wised contralateral corr matrix.
+            pass
 
 
 #%%

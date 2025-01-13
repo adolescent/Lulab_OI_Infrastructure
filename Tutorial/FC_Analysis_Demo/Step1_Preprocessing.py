@@ -177,9 +177,17 @@ from Atlas_Corr_Tools import Atlas_Data_Tools
 ADT = Atlas_Data_Tools(series=series,bin=4,min_pix=30)
 ADT.Get_All_Area_Response()
 Area_Response = ADT.Area_Response
+Area_Response_Heatmap = ADT.Combine_Response_Heatmap()
+Corr_Matrix = ADT.Get_Corr_Matrix(win_size=1500,win_step = 300,keep_unilateral=False)
+sns.heatmap(Corr_Matrix[1],center=  0.5,square = True)
+# cf.Save_Variable(wp,'Atlas_Infos',ADT)
 
-#%% You can see the response of each brain area. We provide a pandas data frame for name.
 
+#%% It's also possible for contralateral consistency calculation.
+# similary, you will need to provide win_len and win_step.
+# both pix-wised map and 
+MG = Mask_Generator(bin=4)
+area_mask = MG.idmap!=0
 
 
 
