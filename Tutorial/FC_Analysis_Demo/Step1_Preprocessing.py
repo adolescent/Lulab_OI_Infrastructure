@@ -51,7 +51,8 @@ Part 3, align graph into standard space.
 As the stack is captured in 256x256, we choose bin=4 in standard model.
 '''
 from Align_Tools import Match_Pattern
-
+binned_r_series = np.load(r'D:\ZR\_Data_Temp\Ois200_Data\Full_Demo\Preprocessed\binned_r_series.npy')
+avr_graph = binned_r_series.mean(0)
 MP = Match_Pattern(avr = avr_graph,bin=4,lbd=4.2) 
 # lbd is lambda-bregma-distance, you can physically measure the distance between them to match it more accurately.
 MP.Select_Anchor()
@@ -172,26 +173,38 @@ z_series = np.load(r'D:\ZR\_Data_Temp\Ois200_Data\Full_Demo\Preprocessed\z_serie
 series = np.clip(z_series,-3,3)*mask
 
 
-from Atlas_Corr_Tools import Atlas_Data_Tools
+from Atlas_Corr_Tools import Atlas_Data_Tools,Contra_Similar
 
 ADT = Atlas_Data_Tools(series=series,bin=4,min_pix=30)
 ADT.Get_All_Area_Response()
 Area_Response = ADT.Area_Response
 Area_Response_Heatmap = ADT.Combine_Response_Heatmap()
 Corr_Matrix = ADT.Get_Corr_Matrix(win_size=1500,win_step = 300,keep_unilateral=False)
-sns.heatmap(Corr_Matrix[1],center=  0.5,square = True)
+sns.heatmap(Corr_Matrix[1],center=  0.5,vmax = 1,square = True)
 # cf.Save_Variable(wp,'Atlas_Infos',ADT)
 
 
 #%% It's also possible for contralateral consistency calculation.
 # similary, you will need to provide win_len and win_step.
-# both pix-wised map and 
-MG = Mask_Generator(bin=4)
-area_mask = MG.idmap!=0
+winsize = 1500
+winstep = 300
+winnum = (len(series)-winsize)//winstep+1
+contra_sims = np.zeros(shape = (winnum,330,285),dtype='f8')
+for i in tqdm(range(winnum)):
+    c_slide = series[winstep*i:winstep*i+winsize,:,:]
+    contra_sims[i,:,:] = Contra_Similar(c_slide,bin=4)
 
+np.save(cf.join(wp,'Contralateral_Similar'),contra_sims)
 
-
-#%% Test run part 
-
-
+#%% Plot graphs.
+savepath = cf.join(wp,'Contralateral')
+cf.mkdir(savepath)
+for i in tqdm(range(len(contra_sims))):
+    c_corr = contra_sims[i,:,:]
+    plt.clf()
+    # plt.cla()
+    fig,ax = plt.subplots(ncols=1,nrows=1,figsize = (5,5),dpi = 240)
+    sns.heatmap(c_corr,xticklabels=False,yticklabels=False,square=True,ax = ax,center=0.8,vmax = 1,vmin =0.6)
+    fig.savefig(cf.join(savepath,f'{10000+i}.png'))
+    plt.close(fig)
 

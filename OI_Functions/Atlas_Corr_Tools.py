@@ -14,6 +14,7 @@ from scipy.stats import pearsonr
 import copy
 
 
+
 class Atlas_Data_Tools(object):
     name = 'Atlas Data Easy Tool'
 
@@ -110,13 +111,31 @@ class Atlas_Data_Tools(object):
             self.Corr_Matrix[i] = c_corr_frame
         return self.Corr_Matrix
 
-        def Contralateral_Similarity(self,win_size = 600,win_step = 150):
-            # this function will generate pix-wised contralateral corr matrix.
-            pass
+#%% 
+#################################### CLASS END HERE #######################################
+# below are functions for contralateral calculation.
 
-        def Contralateral_Similarity_Area(self,win_size = 600,win_step = 150):
-            # this function will generate brain area-wised contralateral corr matrix.
-            pass
+
+def Contra_Similar(series,bin=4):
+    # this function will generate pix-wised contralateral corr matrix.
+    # MAKE SURE MASK ALREADY BE DONE.
+    _,height,width = series.shape
+    mirrored_series = series[:, :, ::-1]
+
+    MG = Mask_Generator(bin=bin)
+    area_mask = MG.idmap>0
+    series_mask = series.std(0)>0
+    joint_mask = area_mask*series_mask 
+    joint_mask = joint_mask*joint_mask[:,::-1] # here are mask where all values are not 0.
+    similar_map = np.zeros(shape = (height,width),dtype='f8')
+
+    for i in range(height):
+        for j in range(width):
+            if joint_mask[i,j] == True:
+                c_r,_ = pearsonr(series[:,i,j],mirrored_series[:,i,j])
+                similar_map[i,j] = c_r
+
+    return similar_map
 
 
 #%%
