@@ -117,8 +117,9 @@ class Atlas_Data_Tools(object):
 
 
 def Contra_Similar(series,bin=4):
-    # this function will generate pix-wised contralateral corr matrix.
-    # MAKE SURE MASK ALREADY BE DONE.
+    '''
+    Calculate contralateral similarity of given series. MAKE SURE MASK ALREADY BE DONE.
+    '''
     _,height,width = series.shape
     mirrored_series = series[:, :, ::-1]
 

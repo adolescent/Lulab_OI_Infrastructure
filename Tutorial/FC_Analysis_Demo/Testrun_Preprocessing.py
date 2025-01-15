@@ -37,7 +37,7 @@ print(raw_r_series.shape)
 _,height,width = raw_r_series.shape
 bin_time = 6
 binned_num = len(raw_r_series)//bin_time # we bin 30 to 5, average every 6 frame
-binned_r_series = raw_r_series[:binned_num*bin_tim,:,:].reshape(binned_num,bin_time,height,width)
+binned_r_series = raw_r_series[:binned_num*bin_time,:,:].reshape(binned_num,bin_time,height,width)
 binned_r_series = binned_r_series.mean(1).astype('u2')# use uint 2 to save HD space.
 
 avr_graph = binned_r_series.mean(0)
