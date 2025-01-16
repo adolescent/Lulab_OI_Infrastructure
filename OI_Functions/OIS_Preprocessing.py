@@ -113,6 +113,23 @@ def One_Key_OIS_Preprocessor(root_folder,save_format = 'python'):
     end_time = time.time()
     print(f'Process Done. \nTime cost : {(end_time-start_time):.1f} s')
 
+#%% Recently we found HD have problem frequently. So I added some functions, use which can you save seperately.
+# these functions will cost more memory, but will not lose middle vars if HD drops.
+def One_Key_Graph_Reader(path,keepna = False):
+    info_path = cf.Get_File_Name(path,'.txt','info')[0]
+    img_file_names = cf.Get_File_Name(path,'.bin','img')
+    channel_names = Info_Reader(info_path)['Channel_Names']
+    _,graphs_all = Graph_Reader_All(img_file_names,channel_names,keepna = keepna)
+    return graphs_all
+    
+
+
+def One_Key_AI_Reader(path):
+    # info_path = cf.Get_File_Name(path,'.txt','info')[0]
+    analog_file_names = cf.Get_File_Name(path,'.bin','ai')
+    _,ai_signals = Analog_Reader_All(analog_file_names)
+    return ai_signals
+
 
 if __name__ == '__main__':
     
