@@ -55,7 +55,10 @@ class Mask_Generator(object):
         c_mask = hemi.loc[hemi['Area']==area]['Mask'].iloc[0]
         return c_mask
 
-    
+    def Get_Weight_Map(self,weight_frame):
+        # This function returns brain-area weight map.
+        # NOTE You need Provide a pandas Dataframe, with 2 columns ['Area','weight']
+        pass
 
     
 #%% test tun

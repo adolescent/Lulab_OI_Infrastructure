@@ -20,22 +20,19 @@ This part will show how to handel pupil and motion data captured from video.
 
 
 ----------------------------------Process2：Direct Correlation Method-----------------------------------------------
-
 ##################  Analysis 1(P2A1) : Seedpoint and Corr Matrix
-1. Seed point Correlation(window-slide)
-2. Correlation matrix(re-arrange added)(ignore area less than 50 pix inside.)
+1.（Done） Seed point Correlation(window-slide)
+2.（Done） Correlation matrix(re-arrange added)
 3. Contralateral similarity calculation(brain-area avr added.)
-
 
 ##################  Analysis 2(P2A2) : Inner Area Consistent
 1. Pairwise Correlation inner brain area
 2. Single Pixel Relaxation Distance(Inner and Outside)
 3.
 
-
-
 ##################  Analysis 3(P2A3) : Frequency and Specturm Analysis
 1. 2-area(can combine area as required) specturm analysis(wavelet and slide window fourier)
+    1.1. Contralateral Similarity calculation based on Specturm Methods
 2. Phase Locking Analysis(Hilbert transform)
 
 
@@ -53,14 +50,13 @@ This part will show how to handel pupil and motion data captured from video.
 
 
 ----------------------------------Process4：Dynamical Analysis-----------------------------------------------
-
 ################### Analysis1 (P4A1): Timecourse Analysis
 1. Ensemble Timecourse Repeat Analysis.(Peakfind & Waittime)
 2. Timecourse Info combined with behavior.
 
-
 ################### Analysis2 (P4A2): Neuro-Trace
 1. PCA-based trace analysis
+2. UMAP-based trace analysis
 2. High-Dimension Trace Analysis
 
 
