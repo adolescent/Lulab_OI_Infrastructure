@@ -2,7 +2,7 @@ This folder will provide a full demonstration of functional connection analysis 
 The demo data was located at 'D:\ZR\_Data_Temp\Ois200_Data\Full_Demo'
 
 To-Do-Lists are as follows:
-----------------------------------Process1：Preprocessing-----------------------------------------------
+----------------------------------Process1：Preprocessing----------------------------------------------------
 ################## Analysis 1(P1A1) : Basic Preprocessing
 1.(Done) Transfer .bin file into python-readable format
 2.(Done) Time-course bin, down sample series into freq required.
@@ -19,7 +19,7 @@ This part will show how to handel pupil and motion data captured from video.
 
 
 
-----------------------------------Process2：Direct Correlation Method-----------------------------------------------
+----------------------------------Process2：Direct Correlation Method----------------------------------------
 ##################  Analysis 1(P2A1) : Seedpoint and Corr Matrix
 1.（Done） Seed point Correlation(window-slide)
 2.（Done） Correlation matrix(re-arrange added)
@@ -33,8 +33,9 @@ This part will show how to handel pupil and motion data captured from video.
 ##################  Analysis 3(P2A3) : Frequency and Specturm Analysis
 1. 2-area(can combine area as required) specturm analysis(wavelet and slide window fourier)
     1.1. Contralateral Similarity calculation based on Specturm Methods
-2. Phase Locking Analysis(Hilbert transform)
-
+2. Phase Locking Analysis(Hilbert transform) *This method need "narrow-band-signal", which means we need to makesure or filt data into narrow band firstly.
+ FYI:https://pmc.ncbi.nlm.nih.gov/articles/PMC3674231/
+ https://www.youtube.com/watch?v=vKgm1Zxoscc
 
 
 ----------------------------------Process3：Pattern Recognition-----------------------------------------------
@@ -49,10 +50,12 @@ This part will show how to handel pupil and motion data captured from video.
 
 
 
-----------------------------------Process4：Dynamical Analysis-----------------------------------------------
+----------------------------------Process4：Dynamical Analysis-------------------------------------------------
 ################### Analysis1 (P4A1): Timecourse Analysis
 1. Ensemble Timecourse Repeat Analysis.(Peakfind & Waittime)
 2. Timecourse Info combined with behavior.
+
+
 
 ################### Analysis2 (P4A2): Neuro-Trace
 1. PCA-based trace analysis

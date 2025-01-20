@@ -19,6 +19,7 @@ class Mask_Generator(object):
         breg = cf.Load_Variable(cf.join(base_path,'Bregma.pkl')) # breg in seq y,x
         # self.breg = 
         # load area map and mask for current bin. method below is dumb, but it works.
+        # NOTE self.idmap may not return perfect map to you, you will need self.masks
         if bin == 1:
             self.breg = breg
             self.idmap = np.load(cf.join(base_path,'Raw_Area_ID.npy'))
@@ -55,6 +56,32 @@ class Mask_Generator(object):
         c_mask = hemi.loc[hemi['Area']==area]['Mask'].iloc[0]
         return c_mask
 
+    def ID_Name(self,c_id):
+        # inner function, input an ID of idmap, return its' name.
+        c_area_name = self.masks.loc[self.masks['ID'] == c_id]['Area'].iloc[0]
+        c_hemi = self.masks.loc[self.masks['ID'] == c_id]['LR'].iloc[0]
+        whole_name = c_area_name+'_'+c_hemi
+        return whole_name
+
+    def Avr_By_Area(self,graph,min_pix = 100):
+        # add up a input graph, and return brain-area response matrix.
+        # NOTE you can use this function to average ANY pix map.
+
+        # area with pix less than min_pix will be ignored.
+        graph_mask = (graph != 0)
+        # get all id of given mask
+
+        all_id = np.arange(1,63) # all visable id on 
+        avr_response = pd.DataFrame(columns = ['Name','Response'])
+        for i,c_id in enumerate(all_id):
+            c_mask = self.masks.loc[self.masks['ID']==c_id]['Mask'].iloc[0]
+            c_name = self.ID_Name(c_id)
+            joint_mask = graph_mask*c_mask
+            # avr graph if value is ok.
+            if joint_mask.sum()>min_pix:
+                c_response = (graph*joint_mask).mean()
+                avr_response.loc[len(avr_response),:] = c_name,c_response
+
     def Get_Weight_Map(self,weight_frame):
         # This function returns brain-area weight map.
         # NOTE You need Provide a pandas Dataframe, with 2 columns ['Area','weight']
@@ -65,8 +92,9 @@ class Mask_Generator(object):
 if __name__ == '__main__':
     MG = Mask_Generator(bin = 4)
     # plt.imshow(MG.idmap)
-    all_areas = MG.all_areas
-    # mask = MG.Get_Mask()
-    MG.Pix_Label(220,225)
-    c_mask = MG.Get_Mask('VISp','R')
-    plt.imshow(c_mask)
+    # all_areas = MG.all_areas
+    # # mask = MG.Get_Mask()
+    # MG.Pix_Label(220,225)
+    # c_mask = MG.Get_Mask('VISp','R')
+    # plt.imshow(c_mask)
+    print(MG.ID_Name(1))
