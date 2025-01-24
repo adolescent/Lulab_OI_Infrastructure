@@ -79,13 +79,24 @@ class Mask_Generator(object):
             joint_mask = graph_mask*c_mask
             # avr graph if value is ok.
             if joint_mask.sum()>min_pix:
-                c_response = (graph*joint_mask).mean()
-                avr_response.loc[len(avr_response),:] = c_name,c_response
+                c_response = graph[joint_mask==True].mean()
+                avr_response.loc[len(avr_response),:] = [c_name,c_response]
 
-    def Get_Weight_Map(self,weight_frame):
+        return avr_response
+
+    def Get_Weight_Map(self,weight_frame,spliter = '_'):
+        # NOTE You need Provide a pandas Dataframe, with 2 columns ['Name','Response']
+        # NOTE This function have a litte problem on boulder, so use it ONLY for visualize, DONOT for computation!
         # This function returns brain-area weight map.
-        # NOTE You need Provide a pandas Dataframe, with 2 columns ['Area','weight']
-        pass
+        
+        weight_map = np.zeros(shape = self.idmap.shape)
+        # all_names = list(weight_frame['Name'])
+        for i in range(len(weight_frame)):
+            c_name_full,c_weight = weight_frame.iloc[i,:]
+            c_area,c_hemi = c_name_full.split(spliter)
+            weight_map += c_weight*self.Get_Mask(c_area,c_hemi)
+            
+        return weight_map
 
     
 #%% test tun
