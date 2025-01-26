@@ -39,7 +39,7 @@ class Atlas_Data_Tools(object):
             else:
                 self.Area_Function[c_area] = 'Other'
 
-    def Get_All_Area_Response(self):
+    def Get_All_Area_Response(self,keep_unilateral = False):
         # This function will average response by area.
         self.Area_Response = pd.DataFrame(columns = ['Area','Function','LR','pixnum','Series'])
         print('Calculating All Brain Area Response...')
@@ -51,6 +51,13 @@ class Atlas_Data_Tools(object):
                     c_response = self.series[:,combined_mask].mean(1)
                     c_func = self.Area_Function[cloc]
                     self.Area_Response.loc[len(self.Area_Response),:] = [cloc,c_func,hemi,combined_mask.sum(),c_response]
+
+        # delete unilateral area matrix if required.
+        on_area_name = list(set(self.Area_Response['Area']))
+        if keep_unilateral == False: 
+            for i,c_name in enumerate(on_area_name):
+                if (self.Area_Response['Area']==c_name).sum() <2:
+                    self.Area_Response = self.Area_Response[self.Area_Response['Area']!= c_name] # drop uni lateral area.
 
         # after generation, re arrange matrix by LR and function.
         # self.Area_Response = self.Area_Response.sort_values(by=['LR','Function'],ascending=False).reset_index(drop=True)
@@ -79,17 +86,10 @@ class Atlas_Data_Tools(object):
         self.Area_Response_Heatmap = response_heatmap.astype('f8')
         return self.Area_Response_Heatmap
 
-    def Get_Corr_Matrix(self,win_size = 600,win_step = 150,keep_unilateral = True):
+    def Get_Corr_Matrix(self,win_size = 600,win_step = 150):
+
         # this function will calculate corr matrix for area pair we get.
-
-        all_area_name = list(set(self.Area_Response['Area']))
         used_area_response = copy.deepcopy(self.Area_Response)
-
-        # delete areas that have no contralateral parts.
-        if keep_unilateral == False: 
-            for i,c_name in enumerate(all_area_name):
-                if (self.Area_Response['Area']==c_name).sum() <2:
-                    used_area_response = used_area_response[used_area_response['Area']!= c_name] # drop uni lateral area.
         used_area_response['Fullname'] = used_area_response['Area']+'_'+used_area_response['LR']
         used_area_fullname = list(used_area_response['Fullname'])
 
