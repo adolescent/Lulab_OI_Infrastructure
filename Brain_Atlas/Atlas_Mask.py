@@ -84,17 +84,20 @@ class Mask_Generator(object):
 
         return avr_response
 
-    def Get_Weight_Map(self,weight_frame,spliter = '_'):
-        # NOTE You need Provide a pandas Dataframe, with 2 columns ['Name','Response']
-        # NOTE This function have a litte problem on boulder, so use it ONLY for visualize, DONOT for computation!
-        # This function returns brain-area weight map.
-        
+    def Get_Weight_Map(self,area_names,weight_frame,spliter = '_'):
+        # NOTE elements in area_names shall be in format area_Hemi. e.g. 'VISrl_L'
+        # weight frame is the weight of each brain area frame.
+        area_names = list(area_names)
+        weight_frame = list(weight_frame)
+        if len(area_names) != len(weight_frame):
+            raise ValueError('Name and weight have different length!')
+
         weight_map = np.zeros(shape = self.idmap.shape)
         # all_names = list(weight_frame['Name'])
-        for i in range(len(weight_frame)):
-            c_name_full,c_weight = weight_frame.iloc[i,:]
+        for i,c_name_full in enumerate(area_names):
+            c_weight = weight_frame[i]
             c_area,c_hemi = c_name_full.split(spliter)
-            weight_map += c_weight*self.Get_Mask(c_area,c_hemi)
+            weight_map += c_weight*self.Get_Mask(c_area,c_hemi).astype('f8')
             
         return weight_map
 
