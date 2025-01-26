@@ -3,16 +3,19 @@ These functions provide multiple ways of pattern recognition.
 Actually they're just normal method with a SHELL on it, so it's easier to understand.
 
 '''
+from sklearn.decomposition import PCA
+import numpy as np
+
 
 
 def Do_PCA(Z_frame,feature = 'Area',pcnum = 20):
-    # INPUT FRAME SHALL BE IN SIZE (N_Frame,N_Cell)
+    # NOTE: INPUT FRAME SHALL BE IN SHAPE N_feature*N_Sample
     # feature can be 'Area' or 'Time', indicating which axis is feature and which is sample.
     pca = PCA(n_components = pcnum)
     data = np.array(Z_frame)
-    if sample == 'Area':
+    if feature == 'Area':
         data = data.T# Use cell as sample and frame as feature.
-    elif sample == 'Time':
+    elif feature == 'Time':
         data = data
     else:
         raise ValueError('Sample method invalid.')
