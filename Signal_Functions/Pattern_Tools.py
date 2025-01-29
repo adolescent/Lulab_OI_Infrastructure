@@ -8,10 +8,10 @@ import numpy as np
 
 
 
-def Do_PCA(Z_frame,feature = 'Area',pcnum = 20):
+def Do_PCA(Z_frame,feature = 'Area',pcnum = 20,method = 'full'):
     # NOTE: INPUT FRAME SHALL BE IN SHAPE N_feature*N_Sample
     # feature can be 'Area' or 'Time', indicating which axis is feature and which is sample.
-    pca = PCA(n_components = pcnum)
+    pca = PCA(n_components = pcnum,svd_solver=method) # random
     data = np.array(Z_frame)
     if feature == 'Area':
         data = data.T# Use cell as sample and frame as feature.

@@ -69,9 +69,10 @@ Infomap：基于信息论的流压缩算法
 
 
 ################### Analysis2 (P4A2): Neuro-Trace
-1. PCA-based trace analysis
-2. UMAP-based trace analysis
-2. High-Dimension Trace Analysis
+0. PCA-based trace analysis(Done in P3A1)
+1. UMAP-based trace analysis
+2. HMM State change method.
+
 
 
 
