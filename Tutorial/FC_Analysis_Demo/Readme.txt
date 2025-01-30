@@ -32,21 +32,22 @@ This part will show how to handel pupil and motion data captured from video.
 
 ##################  Analysis 3(P2A3) : Frequency and Specturm Analysis
 1. 2-area(can combine area as required) specturm analysis(wavelet and slide window fourier)
-    1.1. Contralateral Similarity calculation based on Specturm Methods
+    1.1. Wavelet Based Correlation analysis
+    1.2. Cross Power Specturm based on slide-window FFT
 2. Phase Locking Analysis(Hilbert transform) *This method need "narrow-band-signal", which means we need to makesure or filt data into narrow band firstly.
  FYI:https://pmc.ncbi.nlm.nih.gov/articles/PMC3674231/
  https://www.youtube.com/watch?v=vKgm1Zxoscc
+3. Phase Locking Connectivity description
 
 
 ----------------------------------Process3：Pattern Recognition-----------------------------------------------
 ################### Analysis1 (P3A1): PCA Analysis
-1. PCA analysis (binned & cut) for small memory.
-2. Area-Averaged PCA Response 
-3. PCA Network Timecourse 
+1. (Done) Timecourse and Spatial PCA
+2. (Done) PCA Network Timecourse 
 
 ################### Analysis2 (P3A2): Hierarchical and Seedpoint Growing Method
-1. Hierarchical clustering pattern Recognition
-2. Seed point growing method
+1. (Done) Hierarchical clustering pattern Recognition
+(decrypted)2. Seed point growing method. This method require a set of seeds. Others are siilar to hierarchical cluster.
 
 
 ################### Analysis3 (P3A3): Community-Structured Classification Method
