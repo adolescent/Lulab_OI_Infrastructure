@@ -26,8 +26,8 @@ This part will show how to handel pupil and motion data captured from video.
 3. (Done) Contralateral similarity calculation(brain-area avr added.)
 
 ##################  Analysis 2(P2A2) : Inner Area Consistent
-1. Pairwise Correlation inner brain area
-2. Single Pixel Relaxation Distance(Inner and Outside)
+1. Pairwise Correlation inner brain area (Visual,SS,Motion 3 area only.)
+2. Single Pixel Relaxation Distance(Corr decay index inside area.)
 3.
 
 ##################  Analysis 3(P2A3) : Frequency and Specturm Analysis
@@ -50,15 +50,11 @@ This part will show how to handel pupil and motion data captured from video.
 (decrypted)2. Seed point growing method. This method require a set of seeds. Others are siilar to hierarchical cluster.
 
 
-################### Analysis3 (P3A3): Community-Structured Classification Method
-method used on https://doi.org/10.1038/s41467-023-44363-z
-https://cloud.tencent.com/developer/article/1801337
-Methods below can be your reference.
-Girvan-Newman：基于边介数的层次化算法。
-Louvain：基于模块度优化的高效算法。
-标签传播算法（LPA）：通过标签扩散发现社区。
-谱聚类：基于图拉普拉斯矩阵的聚类方法。
-Infomap：基于信息论的流压缩算法
+################### Analysis3 (P3A3): Graph-Based Community Discover Algorithm
+1.(Done) Build connection graph 
+2.(Done) Louvian Algorithm
+3.(Done) infomap Algorithm
+4.(Done) LPA(Label Propagation) Analysis
 
 
 
