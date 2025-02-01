@@ -101,6 +101,16 @@ class Mask_Generator(object):
             
         return weight_map
 
+    def Get_Func_Mask(self,area = 'VI',LR='L'):
+        # area can be VI/SS/MO/RSP, indicating visual, somatosensory, motion and retrosplenial area.
+        # this function will combine functional brain areas.
+        c_mat = self.masks.groupby('LR').get_group(LR)
+        c_mat_names = list(c_mat['Area'])
+        combined_mask = np.zeros(shape=self.idmap.shape,dtype='bool')
+        for i,c_name in enumerate(c_mat_names):
+            if area in c_name:
+                combined_mask += c_mat[c_mat['Area']==c_name].iloc[0]['Mask']
+        return combined_mask
     
 #%% test tun
 if __name__ == '__main__':
@@ -111,4 +121,5 @@ if __name__ == '__main__':
     # MG.Pix_Label(220,225)
     # c_mask = MG.Get_Mask('VISp','R')
     # plt.imshow(c_mask)
-    print(MG.ID_Name(1))
+    # print(MG.ID_Name(1))
+    plt.imshow(MG.Get_Func_Mask('RSP','L'))
