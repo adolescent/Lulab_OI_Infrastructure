@@ -23,3 +23,5 @@ def Do_PCA(Z_frame,feature = 'Area',pcnum = 20,method = 'full'):
     PC_Comps = pca.components_# out n_comp*n_feature
     point_coords = pca.transform(data)# in n_sample*n_feature,out n_sample*n_comp
     return PC_Comps,point_coords,pca
+
+
