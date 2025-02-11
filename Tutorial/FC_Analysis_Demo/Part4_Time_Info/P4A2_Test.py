@@ -21,7 +21,7 @@ import seaborn as sns
 import umap
 import copy
   
-wp = r'D:\_DataTemp\OIS\Wild_Type\Preprocessed'
+wp = r'D:\ZR\_Data_Temp\Ois200_Data\Full_Demo\Wild_Type\Preprocessed'
 MG = Mask_Generator(bin=4)
 
 
