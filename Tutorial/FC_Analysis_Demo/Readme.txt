@@ -60,15 +60,15 @@ This part will show how to handel pupil and motion data captured from video.
 
 ----------------------------------Process4：Dynamical Analysis-------------------------------------------------
 ################### Analysis1 (P4A1): Timecourse Analysis
-1. Ensemble Timecourse Repeat Analysis.(Peakfind & Waittime)
+1. (Done)Ensemble Timecourse Repeat Analysis.(Peakfind & Waittime)
 2. Timecourse Info combined with behavior.
 
 
 
 ################### Analysis2 (P4A2): Neuro-Trace
-0. PCA-based trace analysis(Done in P3A1)
-1. UMAP-based trace analysis
-2. HMM State change method.
+0. (Done)PCA-based trace analysis(Done in P3A1)
+1. (Done)UMAP-based trace analysis
+2. (Done)HMM State change method.
 
 
 

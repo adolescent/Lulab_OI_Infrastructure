@@ -12,7 +12,7 @@ import pandas as pd
 from tqdm import tqdm
 from scipy.stats import pearsonr
 import copy
-
+from scipy.spatial.distance import pdist, squareform
 
 
 class Atlas_Data_Tools(object):
@@ -138,6 +138,49 @@ def Contra_Similar(series,bin=4):
 
     return similar_map
 
+######################################Pairwise Corr Function Here.#############################################
+def Paiwise_Calculator(matrix, mask):
+    '''
+    Calculate pairwise correlation relationship inside the mask.
+    Input :
+        matrix : (N_Frame*Height*width),nd array of graph, usually Z series generated previously.
+        mask : (Height*Width) current area mask, must be 1/0 series and the same size as matrix.
+    '''
+    # Step 1: Index pixels in the mask
+    coords = np.argwhere(mask)
+    n = coords.shape[0]
+    if n == 0:
+        raise ValueError("Mask has no active pixels.")
+    
+    # Step 2: Extract time series data for each pixel
+    data_2d = matrix[:,coords[:, 0], coords[:, 1]]
+    
+    # Compute Pearson correlation matrix
+    corr_matrix = np.corrcoef(data_2d.T)
+    
+    # Step 3: Compute pairwise Euclidean distances
+    distances = pdist(coords, metric='euclidean')
+    dist_matrix = squareform(distances)
+    
+    # Step 4: Create DataFrame with upper triangle values
+    triu_i, triu_j = np.triu_indices(n, k=1)
+    df = pd.DataFrame({
+        'ID_A': triu_i + 1,  # Convert to 1-based ID
+        'ID_B': triu_j + 1,
+        'Distance': dist_matrix[triu_i, triu_j],
+        'Correlation': corr_matrix[triu_i, triu_j]
+    })
+    
+    return df
+
+def Pairwise_ID_Loc(mask, pixel_id):
+    '''
+    Return x,y coordinate of id for pixels in pairwise calculator generated data frame.
+    '''
+    coords = np.argwhere(mask)
+    if pixel_id < 1 or pixel_id > coords.shape[0]:
+        raise ValueError("Invalid pixel ID.")
+    return coords[pixel_id - 1].astype(int)
 
 #%%
 if __name__ == '__main__':
