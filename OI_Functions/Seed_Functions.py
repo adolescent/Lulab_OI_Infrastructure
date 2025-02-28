@@ -31,7 +31,10 @@ def Seed_Corr_Core(seed_series,response_matrix):
     for i in range(heights):
         for j in range(widths):
             c_pix = response_matrix[:,i,j]
-            c_corr,_ = pearsonr(c_pix,seed_series)
+            if c_pix.any(): # not all zero series
+                c_corr,_ = pearsonr(c_pix,seed_series)
+            else:
+                c_corr = np.nan
             corr_matrix[i,j] = c_corr
 
     return corr_matrix
