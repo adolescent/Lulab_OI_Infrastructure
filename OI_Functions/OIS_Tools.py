@@ -249,11 +249,14 @@ def Info_Reader(txt_path):
     # get img channel numbers.
     img_channels = list(filter(lambda x: 'Illumination' in x, info_data))
     img_channels = list(map(lambda x: x.split(':')[-1].strip(), img_channels))
+    ExposureSpeckleMsec = list(filter(lambda x: 'ExposureSpeckleMsec' in x, info_data))[0]
+    ExposureSpeckleMsec = float(ExposureSpeckleMsec.split(':')[-1])
 
 
     # save element into dics.
     info_dics['Imaging_Freq'] = capture_freq
     info_dics['Channel_Names'] = img_channels
+    info_dics['ExposureSpeckleMsec'] = ExposureSpeckleMsec
 
     return info_dics
 
