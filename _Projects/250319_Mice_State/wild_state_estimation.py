@@ -27,8 +27,8 @@ series = np.clip(series,-5,5)
 #%% load whisker
 import h5py    
 
-# filename =cf.join(wp,'47#250115_FacemapPose.h5')
-filename = r'D:\ZR\_Data_Temp\Ois200_Data\activity_analysis\A6\facemap\Run01-A6_FacemapPose.h5'
+filename =cf.join(wp,'47#250115_FacemapPose.h5')
+# filename = r'D:\ZR\_Data_Temp\Ois200_Data\activity_analysis\A6\facemap\Run01-A6_FacemapPose.h5'
 f = h5py.File(filename, 'r+')
 dset = f['Facemap']
 keys = list(dset.keys())
@@ -59,10 +59,10 @@ w3_speed = speed_calculator(w3x,w2y)
 
 avr_speed = (w1_speed+w2_speed+w3_speed)/3
 # start and end frame comes from video!
-# start_frame = 48
-# end_frame = 72123
-start_frame = 53
-end_frame = -1
+start_frame = 48
+end_frame = 72123
+# start_frame = 53
+# end_frame = -1
 avr_speed = avr_speed[start_frame:end_frame]
 
 
@@ -175,11 +175,13 @@ motion_list = ['Low','Medium','High']
 motion_index = [lower_indices,medium_indices,higher_indices]
 hemi = ['L','R']
 corr_pair = [('VI','SS'),('VI','MO'),('VI','RSP'),('SS','MO'),('SS','RSP'),('MO','RSP')]
-case_name = 'A6'
-case_type = 'GGC11'
+# case_name = 'A6'
+# case_type = 'GGC11'
+case_name = '47#'
+case_type = 'Wild'
 framenum = len(avr_speed_d)
-# bold_lag = 7
-bold_lag = 5
+bold_lag = 7
+# bold_lag = 5
 
 ## fill the matrix
 for l,c_motion in enumerate(motion_list):
@@ -216,11 +218,14 @@ cf.Save_Variable(wp,'Corr_by_Motion_Contra',corr_info_contra_hemi)
     
 #%% let's test whether it is okay...
 # use visual and somatosensory as model.
-example_frame = copy.deepcopy(corr_info_same_hemi.groupby(['Area_A','Area_B']).get_group(('VI','SS')))
-example_frame['Corr'] = example_frame['Corr'].astype('f8')
+corr_info_same_hemi['Area_Pair'] = corr_info_same_hemi['Area_A']+'-'+corr_info_same_hemi['Area_B']
+
+# example_frame = copy.deepcopy(corr_info_same_hemi.groupby(['Area_A','Area_B']).get_group(('VI','SS')))
+# example_frame['Corr'] = example_frame['Corr'].astype('f8')
+
 
 fig,ax = plt.subplots(ncols=1,nrows=1,figsize = (5,4),dpi=240)
-sns.boxplot(data=example_frame,x = 'Motion_Level',y='Corr',hue = 'A_Hemi',ax = ax,width=0.5,showfliers=False)
-ax.set_ylim(0.85,1)
+sns.boxplot(data=corr_info_same_hemi,x = 'Area_Pair',y='Corr',hue = 'Motion_Level',ax = ax,width=0.5,showfliers=False)
+# ax.set_ylim(0.85,1)
 
 

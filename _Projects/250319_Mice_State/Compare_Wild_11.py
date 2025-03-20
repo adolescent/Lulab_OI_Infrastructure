@@ -33,9 +33,11 @@ example_frame['Corr'] = example_frame['Corr'].astype('f8')
 
 fig,ax = plt.subplots(ncols=1,nrows=1,figsize = (5,4),dpi=240)
 sns.boxplot(data=example_frame,x = 'Area_Pair',y='Corr',hue = 'Case_Type',ax = ax,width=0.5,showfliers=False)
-# ax.set_ylim(0.85,1)
+
+ax.set_ylim(0.6,1)
 
 #%% stat of 2 distribution.
+example_frame = copy.deepcopy(corr_info_same.groupby('Motion_Level').get_group('Low'))
 test_pair = example_frame.groupby('Area_Pair').get_group('SS-MO')
 
 resp_wild = test_pair.groupby('Case_Type').get_group('Wild')['Corr']
