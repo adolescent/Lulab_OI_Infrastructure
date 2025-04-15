@@ -17,7 +17,7 @@ from tqdm import tqdm
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 
 
-def FFT_Spectrum(series, fps,ticks = 0.01,plot = False):
+def FFT_Spectrum(series, fps,ticks = 0.01,plot = False,normalize = True):
     """
     Compute Power spectrum of given series, note that it will return power density and raw power at the same time.
 
@@ -47,7 +47,10 @@ def FFT_Spectrum(series, fps,ticks = 0.01,plot = False):
 
     # Normalize the PSD so that the total power sums to 1
     total_power = np.sum(power_raw)
-    power_density = power_raw / total_power
+    if normalize == True:
+        power_density = power_raw / total_power
+    else:
+        power_density = power_raw
 
 
     # Bin the power density
