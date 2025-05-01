@@ -9,6 +9,7 @@ import pandas as pd
 from tqdm import tqdm
 import os
 import copy
+import cv2
 
 class Mask_Generator(object):
 
@@ -111,6 +112,10 @@ class Mask_Generator(object):
             if area in c_name:
                 combined_mask += c_mat[c_mat['Area']==c_name].iloc[0]['Mask']
         return combined_mask
+    
+    def Area_Counters(self):
+        boulders = cv2.Canny(self.idmap.astype('u1'), 0, 1)
+        return boulders
     
 #%% test tun
 if __name__ == '__main__':
