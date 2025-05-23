@@ -1,15 +1,27 @@
 #%%
 
+# import and basic path part
 import OI_Functions.Common_Functions as cf
-import OI_Functions.OIS_Tools as Ois_Tools
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import cv2
+from tqdm import tqdm
+import pandas as pd
+from Brain_Atlas.Atlas_Mask import Mask_Generator
+from OI_Functions.OIS_Preprocessing import Single_Folder_Processor
 import re
 
 
+data_folder = r'/mnt/6551E1FB6F594FFC/Test_Folder/Short_Demo'
 
+Single_Folder_Processor(data_folder,subfolder='Preprocessed',save_format='python',keepna=False)
+# keepna parameter will maintain lost frame as 0, otherwise these frames are filled with previous frame.
 
+# then we load the pre-processed frame.
+wp = cf.join(data_folder,r'Preprocessed')
+raw_r_series = np.load(cf.join(wp,'Red.npy'))
+print(raw_r_series.shape)
 
 
 #%%
