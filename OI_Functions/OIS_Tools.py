@@ -145,6 +145,7 @@ def Graph_Bin_Reader_Core(filename):
         img_data = np.array(struct.unpack(f'{x_width*y_width}H',c_graph_bytes[24:]))
         all_frames[i,:,:] = img_data.reshape((x_width,y_width))
         all_heads[i,:] = c_graph_head
+        all_heads[:,1] = all_heads[:,1]>0 # CORE FIX, Keep ONLY 1 Missed trigger.
     file.close()
     del data_bytes
     # below is adjustment of data frame, all nan to missed trigger location.
