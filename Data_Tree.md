@@ -244,3 +244,97 @@ series是1D的信号，对信号进行高通和低通的巴特沃茨滤波。HP_
 ###  Pattern_Tools.py
 用于模式识别的工具包，目前只支持PCA。
 #### Do_PCA
+调用方法为：    
+from Signal_Functions.Pattern_Tools import Do_PCA    
+PC_Comps,point_coords,pca = Do_PCA(z_frame,feature='Area',pcnum=20，method='full')    
+是一个套壳的PCA工具，用来一键式地完成PCA分析。    
+z_frame是需要进行PCA的数据，推荐在PCA之前对数据进行z分数化。    
+**在输入前需要对数据进行一维化，输入N_feature*N_Sample的矩阵。**    
+feature决定做PCA的方向是空间还是时间。    
+pcnum是最后保留的主成分的数目，输出多少个主成分。    
+method是解SVD矩阵的方法，默认方法是'auto'，但有的时候没办法收敛，改成'full'可以解决（但占用内存会变得巨大）    
+输出：    
+PC_Comps:：全部PC成分组成的数组，pcnum决定了数组大小。n_comp*n_feature    
+point_coords：全部数据点在PC空间中的坐标，数组大小为 n_sample*n_feature    
+pca：基于给定数据训练的PCA降维器，参见*https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html*    
+
+---
+###  Spectrum_Tools.py
+一些用于频率分析的小程序。    
+
+#### FFT_Spectrum(series, fps,ticks = 0.01,plot = False,normalize = True)
+series是一维数组，这个程序用于对输入数组进行FFT分析。    
+fps是数据的采集频率    
+为了平衡不同长度的序列，这个函数同时对输出的频率序列进行了bin操作，ticks决定了每个频率bin的步长。plot=True将在函数运行的时候同时生成一个缩略图。    
+normalize将决定返回的是频率能量还是频率的能量密度。    
+输出：    
+freq_ticks：每个频段的tick,[0,0.01,0.02,...]这样的序列    
+binned_power：bin过之后的每个频段的能量功率。
+freqs_raw：未作bin的原始频率ticks。
+power_raw：未作bin的原始能量谱，这个序列的长度与输入信号的长度有关系，不太推荐。
+total_power：输入信号的全频段power。
+
+#### FFT_Spectrum_Slide(series,win_size,win_step,fps,ticks=0.01,normalize = True)    
+对长序列进行滑窗FFT分析。返回一个滑窗的能量谱。参数同FFT_Spectrum    
+
+#### Wavelet_Coherent(signal,fps,freqs)    
+类似的频谱分析工具，不过使用的是小波分析。注意可能需要安装pywt工具包。    
+signal是输入的1D信号，fps是采样分辨率，freqs是想要得到的采样频率nd-array，根据需求可以提供连续和不连续的采样频率列表，得到每个频段下的小波相干。
+
+---
+## Tutorial
+本文件夹应该是最重要的，包含了一系列演示文件，展示了各种常见的分析场合的代码使用方式。
+### FC_Analysis_Demo
+本文件夹中的演示展示了从原始数据到功能连接分析的常用手段。
+
+#### Part1 Preprocessing
+- P1A1 展示了数据预处理的方法，如何从OIS原始数据得到预处理后的Z序列和dRR序列。    
+- P1A1 同时包含了生成视频video的代码。
+#### Part2 Direct Corr Methods
+本节展示了如何通过直接相关法进行模式识别。    
+- P2A1 展示了种子点相关进行模式识别的方法，同时可以按照脑区对种子点进行平均    
+- P2A2 展示了一个pairwise corr的方法，包括如何在一个脑区内部进行pairwise相关的计算，并展示了如何计算corr随距离衰减。    
+- P2A3 展示了如何进行频率谱分析，包括FFT和小波相干的分析    
+#### Part3 Pattern Recognition
+本节展示了一些模式识别的算法。作为时无关的模式识别方式，这些方法有助于进行数据的降维压缩，而且图比较fancy。*（个人比较推荐）*    
+P3A1 PCA分析，包括时间PCA、空间PCA、权重曲线等。PCA是简单有效的模式识别工具，可以展示神经活动中的特征性成分，但要注意这些成分本身并不一定总是直接在活动中出现的。    
+P3A2 层次聚类，展示了使用树状图进行层次聚类的方法。不同的距离指标将得到不同的聚类模式。与PCA不同，层次聚类找到的活动模式是真实存在的重复。    
+P3A3 基于图论的模式识别算法。展示了几种基于不同近邻数的社区发现算法（鲁汶算法等）。可以得到很fancy的模式，基于局部特征进行。具有更高的识别能力，但更不好解释。    
+#### Part4 Time Info
+本节展示了一些用于进行时序分析的算法，用于分析信号中的时间活动关系
+P4A1 是最常用的基本时间描述，包括寻峰、不同脑区的活动曲线、峰描述、活动事件间隔、QQ图、FFT频率分析、小波频率分析、相关分析等等。*可能是最常用的基本时间信息*
+P4A2 是基于UMAP的高维神经状态活动轨迹。不仅局限于UMAP，使用其它技术也可也分析神经活动的模式。
+P4A3 基于隐马尔可夫模型的状态切换描述，仅用作展示。
+
+---
+## A系列和P系列开头的教程
+A系列开头的教程（Analysis）是具体任务导向的分析。    
+P系列开头的教程（Pre-Process）是一些预处理相关的分析。    
+
+### A1 OI SubMaps
+用于从dRR字典计算得到内源成像的减图。包含了空间filter和clip的做法
+
+### A2 Seed Point Correlation
+种子点相关法的做法，本方法里的种子点相关是对图片先进行分割，再对每个窗口分别进行相关。这个方法现在不太实用了，可以参见Tutorial文件夹里的P2A2方法。
+
+### A4 Simple PCA
+简单的全画幅PCA，用于对成像图序列进行主成分分析。这个脚本展示了一些PCA运算的细节。
+
+### A5 Normal Seed Corr
+从mask开始出发做种子点相关的一些code，
+
+### P1 From OIS to dRR
+从OIS采集的原始数据得到dR/R序列，仅适用于**自发数据**。如果要给stim的话，需要对stim和frame进行对齐。
+
+### P2 From VDaq to dRR
+读取VDQ采集的BLK文件，并进行dR/R序列的运算。可以参考这一脚本学习VDaQ采集到的BLK文件的组织结构。
+
+### P3 From Longdaq to dRR
+类似P2，不过是对Longdaq数据进行的处理。需要注意这两组数据拼接和处理格式的不同。    
+需要注意的是无论是VDaQ还是Longdaq，采集到的数据都与OIS的存在一些不同，数据处理的时候需要留意。
+
+### P4 Affine R Series
+使用仿射变换对采集到的数据进行对齐，基本上是Tutorial/P1A1的内容。**要注意由于一个ui问题，预处理只能用远程桌面的方式来做。**
+
+### P5 Graph Align
+用来对齐采集过程中，成像窗口移动的问题。目前只支持平移变换。对齐可以补偿一定程度的运动伪影，但最好还是在采集过程重提高物理的固定水平。
