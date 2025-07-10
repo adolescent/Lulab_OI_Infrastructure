@@ -145,3 +145,4 @@ def apply_affine_transform_to_points(points, matrix):
     homogeneous_points = np.hstack([points, ones])
     transformed_points = (matrix @ homogeneous_points.T).T
     return transformed_points[:, :2]
+
